@@ -1,11 +1,14 @@
 ---
 name: patent-novelty-check
-description: "Assess patent novelty and non-obviousness against prior art. Use when user says \"专利查新\", \"patent novelty\", \"可专利性评估\", \"patentability check\", or wants to evaluate if an invention is patentable."
-argument-hint: "[invention-description-or-brief-path]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
+description: Assess patent novelty and non-obviousness against prior art. Use when user says "专利查新", "patent novelty", "可专利性评估", "patentability check", or wants to evaluate if an invention is patentable.
+metadata:
+  argument-hint: '[invention-description-or-brief-path]'
 ---
 
 # Patent Novelty and Non-Obviousness Check
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Assess patentability of: **$ARGUMENTS**
 
@@ -13,7 +16,7 @@ Adapted from `/novelty-check` for patent legal standards. Research novelty is NO
 
 ## Constants
 
-- `REVIEWER_MODEL = gpt-5.6-sol` — Fresh Codex examiner; same-family provisional in the base mirror
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - `NOVELTY_STANDARD = patent` — Always use legal patentability standard, not research contribution standard
 
 ## Inputs
@@ -76,12 +79,12 @@ Format as a matrix:
 
 ### Step 4: Fresh-Agent Examiner Verification (same-family provisional)
 
-Call `REVIEWER_MODEL` via a dedicated Codex reviewer agent at xhigh reasoning:
+Call `REVIEWER_MODEL` via a dedicated Codex reviewer agent at the current configured reasoning effort:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: patent_novelty_check_review
+  fork_turns: none
   message: |
     You are a senior patent examiner at the [USPTO/CNIPA/EPO].
     Examine the following invention for patentability.
@@ -134,7 +137,7 @@ Write `patent/NOVELTY_ASSESSMENT.md`:
 [combination analysis with motivation to combine]
 
 ### Review-Independence Metadata
-[summary of GPT-5.6-Sol examiner feedback]
+[summary of Codex examiner feedback]
 
 ### Recommended Claim Amendments
 [If claims need modification to overcome prior art, suggest specific amendments]

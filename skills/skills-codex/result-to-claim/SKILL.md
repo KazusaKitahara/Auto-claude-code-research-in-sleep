@@ -1,11 +1,14 @@
 ---
 name: result-to-claim
 description: Use when experiments complete to judge what claims the results support, what they don't, and what evidence is still missing. A secondary Codex agent evaluates results against intended claims and routes to next action (pivot, supplement, or confirm). Use after experiments finish — before writing the paper or running ablations.
-argument-hint: "[experiment-description-or-wandb-run]"
-allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit
+metadata:
+  argument-hint: '[experiment-description-or-wandb-run]'
 ---
 
 # Result-to-Claim Gate
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 > **Codex assurance:** deterministic evidence existence can be accepted, while
 > the base semantic claim judgment records `review_independence: same-family`
@@ -74,8 +77,8 @@ Send the collected results to a secondary Codex agent for objective evaluation:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: ultra
+  task_name: result_to_claim_review
+  fork_turns: none
   message: |
     RESULT-TO-CLAIM EVALUATION
 
@@ -231,8 +234,7 @@ if research-wiki/ exists:
 - A single positive result on one dataset does not support a general claim. Be honest about scope.
 - If `confidence` is low, treat the judgment as inconclusive and add experiments rather than committing to a claim.
 - **Fail closed if the reviewer is unavailable.** Follow the capability fallback
-  in `reviewer-routing.md` (`gpt-5.6-sol` + `ultra` → `gpt-5.6-sol` + `xhigh`
-  → `gpt-5.5` + `xhigh`), and never downgrade on timeout, rate-limit, auth,
+  in `reviewer-routing.md`, and never downgrade on timeout, rate-limit, auth,
   transport, server, or context errors. If no allowed pair succeeds, write a
   traced `BLOCKED` review record with the unavailable route and evidence paths, write
   `CLAIMS_FROM_RESULTS.md` containing only `verdict: REVIEW_UNAVAILABLE`, record

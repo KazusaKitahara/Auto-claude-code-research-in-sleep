@@ -3,7 +3,10 @@ name: "research-review"
 description: "Get a deep critical review of research from GPT using a secondary Codex agent. Use when user says \"review my research\", \"help me review\", \"get external review\", or wants critical feedback on research ideas, papers, or experimental results."
 ---
 
-# Research Review via a secondary Codex agent (ultra reasoning)
+# Research Review via a secondary Codex agent (configured reasoning effort)
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 > **Codex assurance:** the fresh base reviewer is same-family. Record
 > `review_independence: same-family` and `acceptance_status: provisional` in
@@ -14,8 +17,8 @@ Get a multi-round critical review of research work from an external LLM with max
 
 ## Constants
 
-- REVIEWER_MODEL = `gpt-5.6-sol` — Model used via a secondary Codex agent, reasoning effort `ultra` (deep-audit tier). Must be an OpenAI model (e.g., `gpt-5.6-sol`, `gpt-5.5`, `o3`)
-- **REVIEWER_BACKEND = `codex`** — Default: Codex ultra reviewer (deep-audit tier). Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex at this skill's declared tier (`ultra`). **Same-family note:** this default reviewer is a second Codex/GPT agent — valid for Type-A completeness/drive review, but not a cross-family Type-B verdict; install a `skills-codex-claude-review` / `skills-codex-gemini-review` overlay for a cross-family acquittal (see `shared-references/reviewer-routing.md`).
+- REVIEWER_MODEL = current agent model unless the user explicitly selects another available reviewer.
+- **REVIEWER_BACKEND = `codex`** — Default: Codex reviewer at the configured effort. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and use the current configured reviewer only when that fallback is authorized. **Same-family note:** this default reviewer is a second Codex/GPT agent — valid for Type-A completeness/drive review, but not a cross-family Type-B verdict; install a `skills-codex-claude-review` / `skills-codex-gemini-review` overlay for a cross-family acquittal (see `shared-references/reviewer-routing.md`).
 
 ## Context: $ARGUMENTS
 
@@ -33,12 +36,12 @@ Before calling the external reviewer, compile a comprehensive briefing:
 3. Identify: core claims, methodology, key results, known weaknesses
 
 ### Step 2: Initial Review (Round 1)
-Send a detailed prompt with ultra reasoning:
+Send a detailed prompt at the configured reasoning effort:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: ultra
+  task_name: research_review_review
+  fork_turns: none
   message: |
     [Full research context + specific questions]
     Please act as a senior ML reviewer (NeurIPS/ICML level). Start from the
@@ -134,7 +137,7 @@ Save a trace for every `spawn_agent`, `send_input`, or `oracle-pro` review call 
 
 ## Key Rules
 
-- ALWAYS use `model: gpt-5.6-sol` + `reasoning_effort: ultra` for reviews (deep-audit tier; capability fallback per `reviewer-routing.md`, never below `xhigh`)
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 - Send comprehensive context in Round 1 — the external model cannot read your files
 - Be honest about weaknesses — hiding them leads to worse feedback
 - Push back on criticisms you disagree with, but accept valid ones

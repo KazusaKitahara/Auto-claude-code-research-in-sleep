@@ -5,6 +5,9 @@ description: "Generate and rank research ideas given a broad direction. Use when
 
 # Research Idea Creator
 
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
+
 Generate publishable research ideas for: $ARGUMENTS
 
 ## Overview
@@ -17,8 +20,8 @@ Given a broad research direction from the user, systematically generate, validat
 - **PILOT_TIMEOUT_HOURS = 3** — Hard timeout: kill pilots exceeding 3 hours. Collect partial results if available.
 - **MAX_PILOT_IDEAS = 3** — Pilot at most 3 ideas in parallel. Additional ideas are validated on paper only.
 - **MAX_TOTAL_GPU_HOURS = 8** — Total GPU budget for all pilots combined.
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via a secondary Codex agent for brainstorming and review. Must be an OpenAI model (e.g., `gpt-5.6-sol`, `o3`, `gpt-4o`).
-- **REVIEWER_BACKEND = `codex`** — Default: Codex xhigh reviewer through `spawn_agent` / `send_input`. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex xhigh.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
+- **REVIEWER_BACKEND = `codex`** — Default: Codex review at the current configured effort reviewer through `spawn_agent` / `send_input`. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and report the unavailable route; use the configured reviewer only when that fallback is authorized.
 - **OUTPUT_DIR = `idea-stage/`** — All idea-stage outputs go here. Create the directory if it doesn't exist.
 
 > 💡 Override via argument, e.g., `/idea-creator "topic" — pilot budget: 4h per idea, 20h total`.
@@ -157,8 +160,8 @@ Use a secondary Codex agent for divergent thinking:
 
 ```
 spawn_agent:
-  model: REVIEWER_MODEL
-  reasoning_effort: xhigh
+  task_name: idea_creator_review
+  fork_turns: none
   message: |
     You are a senior ML researcher brainstorming research ideas.
 
@@ -204,14 +207,13 @@ spawn_agent:
 
 Save the agent id for follow-up.
 
-Then spawn the **same bundle once more** with `model: gpt-5.5` (same xhigh
-reasoning, a fresh agent) and take the union — the two models fail differently
-as generators, and the union keeps either model's taste from capping the pool.
-Save both agent ids; Phase 4's `send_input` follow-ups go to the default-model
-agent. Tag each candidate with the model that produced it; merge both sets by
-mechanical dedup only — never drop a candidate for being "weak" (that is the
-Phase-4 verdict). If the second spawn errors (model unavailable on this
-account), print one WARN line and continue single-model.
+An additional model-diversity pass is optional. Use it when the user requests
+multiple models or has already selected an available alternative and budget.
+Otherwise inherit the current model and effort. For an authorized diversity
+pass, give a fresh worker the same inputs, record the actual model and agent id,
+and merge candidate sets by mechanical deduplication before substantive review.
+If the selected alternative is unavailable, report that limit and continue with
+the available results; do not invent cross-model coverage.
 
 Save a Review Tracing record for this `spawn_agent` call following `../shared-references/review-tracing.md`, including the landscape summary, prompt summary, raw idea list path, reviewer route, and saved agent id.
 
@@ -248,9 +250,9 @@ quality/novelty narrowing.
 
 For each surviving idea, run a deeper evaluation:
 
-1. **Novelty check**: Use the `/novelty-check` workflow (multi-source search + GPT-5.6-Sol cross-verification) for each idea
+1. **Novelty check**: Use the `/novelty-check` workflow (multi-source search + Codex cross-verification) for each idea
 
-2. **Critical review**: Use GPT-5.6-Sol via `send_input` (same agent):
+2. **Critical review**: Use Codex via `send_input` (same agent):
    ```text
    send_input:
      target: [saved reviewer id from the earlier idea review]
@@ -274,7 +276,7 @@ For each surviving idea, run a deeper evaluation:
        deserves a pilot slot and what result would convince you.
    ```
 
-3. **Combine rankings**: Merge your assessment with GPT-5.6-Sol's ranking. Select top 2-3 ideas for pilot experiments.
+3. **Combine rankings**: Merge your assessment with Codex's ranking. Select top 2-3 ideas for pilot experiments.
 
 ### Phase 5: Parallel Pilot Experiments (for top 2-3 ideas)
 
@@ -410,7 +412,7 @@ See [`output-composition.md`](../shared-references/output-composition.md).
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: For a demonstrated file-size limit, use a permitted literal-safe writer or smaller chunks. Preserve the intended content and current filesystem permissions; a permission denial is not a file-size problem.
 
 - The user provides a DIRECTION, not an idea. Your job is to generate the ideas.
 - Quantity first, quality second: brainstorm broadly, then narrow only to allocate pilot budget — annotate the rest, don't paper-kill them.

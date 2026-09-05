@@ -1,11 +1,14 @@
 ---
 name: kill-argument
-description: "Two-thread adversarial review: a fresh reviewer constructs the strongest 200-word rejection memo, then a second fresh reviewer defends the paper point-by-point and surfaces still-unresolved critical issues. Use when user says \"kill argument\", \"adversarial review\", \"hostile review\", \"rebuttal preparation\", \"reviewer-2 simulation\", or before submitting a theory paper that has already passed standard review rounds."
-argument-hint: "[paper-directory]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, spawn_agent
+description: 'Two-thread adversarial review: a fresh reviewer constructs the strongest 200-word rejection memo, then a second fresh reviewer defends the paper point-by-point and surfaces still-unresolved critical issues. Use when user says "kill argument", "adversarial review", "hostile review", "rebuttal preparation", "reviewer-2 simulation", or before submitting a theory paper that has already passed standard review rounds.'
+metadata:
+  argument-hint: '[paper-directory]'
 ---
 
 # Kill Argument Exercise: Adversarial Attack-Defense Review
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 > **Codex assurance:** both fresh agents are OpenAI-family, so the base JSON
 > records `review_independence: same-family` and
@@ -48,7 +51,7 @@ This skill is most valuable for **theory papers** with ≥5 theorem-class enviro
 
 ## Constants
 
-- **REVIEWER_MODEL** = `gpt-5.6-sol` (default; specify `gpt-5.4` if you want to fall back to the legacy default). Reviewer reasoning effort = `ultra` for the deep-audit core threads (capability fallback never below `xhigh`).
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **CONTEXT_POLICY** = `fresh` (REVIEWER_BIAS_GUARD).  Each thread is a fresh `spawn_agent` call.  **Never** use `send_input`.  No prior review summary, fix list, or executor explanation enters either prompt.
 - **ATTACK_LENGTH** = approximately 200 words (do not exceed 250).  Single coherent argument, not a list.
 - **DEFENSE_DECOMPOSITION** = 3-7 atomic rejection points extracted from the attack memo.  Each gets its own classification.
@@ -93,8 +96,8 @@ Invoke `spawn_agent` (NOT `send_input`) with the following prompt structure. Use
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: ultra
+  task_name: kill_argument_review
+  fork_turns: none
   message: |
     You are simulating a hostile NeurIPS / ICLR / ICML reviewer for a paper.
     This is a kill-argument adversarial check — your task is NOT to give a
@@ -151,8 +154,8 @@ Invoke a second `spawn_agent` call (still NOT `send_input` — Thread 2 is indep
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: ultra
+  task_name: kill_argument_review
+  fork_turns: none
   message: |
     You are an independent area-chair adjudicator examining whether the
     current paper text answers a hostile reviewer's rejection memo.
@@ -233,7 +236,7 @@ Compose the human-readable report `<paper-dir>/KILL_ARGUMENT.md`:
 # Kill Argument Report — <paper title>
 
 **Date**: <YYYY-MM-DD>
-**Reviewer model**: gpt-5.6-sol ultra, fresh agents (no send_input)
+**Reviewer model**: the configured Codex reviewer, fresh agents (no send_input)
 **Attack agent**: <agent_id 1>
 **Adjudicator agent**: <agent_id 2>
 **Verdict**: <PASS / WARN / FAIL / NOT_APPLICABLE / BLOCKED / ERROR> (`reason_code: <...>`)
@@ -279,13 +282,13 @@ ARIS Audit Artifact Schema (`shared-references/assurance-contract.md`):
   },
   "trace_path": ".aris/traces/kill-argument/<date>_run<NN>/",
   "agent_id": "<defense agent_id — primary; attack agent_id in details>",
-  "executor_model": "codex-gpt-5.6-sol",
+  "executor_model": "<actual model identifier>",
   "executor_family": "openai",
-  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_model": "<actual model identifier>",
   "reviewer_family": "openai",
   "review_independence": "same-family",
   "acceptance_status": "provisional",
-  "reviewer_reasoning": "ultra",
+  "reviewer_reasoning": "<actual configured effort>",
   "generated_at": "<UTC ISO-8601>",
   "details": {
     "attack_agent_id": "<agent_id 1>",

@@ -1,11 +1,14 @@
 ---
 name: figure-spec
-description: "Generate deterministic publication-quality architecture, workflow, and pipeline diagrams from structured JSON (FigureSpec) into editable SVG. Use when user says \"架构图\", \"workflow 图\", \"pipeline 图\", \"确定性矢量图\", \"figure spec\", \"draw architecture\", or needs precise, editable, publication-ready vector diagrams. Preferred over AI illustration for formal architecture/workflow figures."
-argument-hint: "[description-of-diagram]"
-allowed-tools: Bash(*), Read, Write, Edit
+description: Generate deterministic publication-quality architecture, workflow, and pipeline diagrams from structured JSON (FigureSpec) into editable SVG. Use when user says "架构图", "workflow 图", "pipeline 图", "确定性矢量图", "figure spec", "draw architecture", or needs precise, editable, publication-ready vector diagrams. Preferred over AI illustration for formal architecture/workflow figures.
+metadata:
+  argument-hint: '[description-of-diagram]'
 ---
 
 # FigureSpec: Deterministic JSON → SVG Figure Generation
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Generate publication-quality **architecture diagrams**, **workflow pipelines**, **audit cascades**, and **system topology** figures as editable SVG vector graphics using a deterministic JSON → SVG renderer.
 
@@ -161,8 +164,8 @@ For paper architecture figures, invoke fresh-agent review (same-family provision
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: figure_spec_review
+  fork_turns: none
   message: |
     Review this SVG figure for a technical paper (architecture / workflow diagram).
 

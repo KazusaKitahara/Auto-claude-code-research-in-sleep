@@ -5,11 +5,14 @@ description: "Draft LaTeX paper section by section from an outline. Use when use
 
 # Paper Write: Section-by-Section LaTeX Generation
 
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
+
 Draft a LaTeX paper based on: **$ARGUMENTS**
 
 ## Constants
 
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via a secondary Codex agent for section review. Must be an OpenAI model.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **TARGET_VENUE = `ICLR`** — Default venue. Supported: `ICLR`, `NeurIPS`, `ICML`, `CVPR` (also ICCV/ECCV), `ACL` (also EMNLP/NAACL), `AAAI`, `ACM` (ACM MM, SIGIR, KDD, CHI, etc.), `IEEE_JOURNAL` (IEEE Transactions / Letters, e.g., T-PAMI, JSAC, TWC, TCOM, TSP, TIP), `IEEE_CONF` (IEEE conferences, e.g., ICC, GLOBECOM, INFOCOM, ICASSP). Determines style file and formatting.
 - **ANONYMOUS = true** — If true, use anonymous author block. Set `false` for camera-ready. Note: most IEEE venues do NOT use anonymous submission — set `false` for IEEE.
 - **MAX_PAGES = 9** — Main body page limit. For ML conferences: counts from first page to end of Conclusion section, references and appendix NOT counted. **For IEEE venues: references ARE counted toward the page limit.** Typical limits: IEEE journal = no strict limit (but 12-14 pages typical for Transactions, 4-5 for Letters), IEEE conference = 5-8 pages including references.
@@ -315,12 +318,12 @@ First apply the sentence-level clarity rules from `../shared-references/writing-
 
 ### Step 6: Cross-Review with REVIEWER_MODEL
 
-Send the complete draft to GPT-5.6-Sol xhigh:
+Send the complete draft to the configured Codex reviewer:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: paper_write_review
+  fork_turns: none
   message: |
     Review this [VENUE] paper draft (main body, excluding appendix).
 
@@ -445,7 +448,7 @@ Before declaring done:
     limitations in the last paragraph.
 
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: For a demonstrated file-size limit, use a permitted literal-safe writer or smaller chunks. Preserve the intended content and current filesystem permissions; a permission denial is not a file-size problem.
 
 - **Do NOT generate author names, emails, or affiliations** — use anonymous block or placeholder
 - **Write complete sections, not outlines** — the output should be compilable LaTeX

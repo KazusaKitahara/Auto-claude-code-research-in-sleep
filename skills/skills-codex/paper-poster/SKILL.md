@@ -1,8 +1,8 @@
 ---
 name: paper-poster
-description: "DEPRECATED — superseded by /paper-poster-html. Kept only as a redirect for muscle memory; do not use for new posters."
-argument-hint: "[paper-dir-or-pdf]"
-allowed-tools: Read
+description: DEPRECATED — superseded by /paper-poster-html. Kept only as a redirect for muscle memory; do not use for new posters.
+metadata:
+  argument-hint: '[paper-dir-or-pdf]'
 ---
 
 # Paper Poster (DEPRECATED → /paper-poster-html)

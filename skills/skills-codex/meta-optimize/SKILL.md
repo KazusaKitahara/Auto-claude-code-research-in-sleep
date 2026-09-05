@@ -1,11 +1,14 @@
 ---
 name: meta-optimize
-description: "Analyze ARIS usage logs and propose optimizations to SKILL.md files, reviewer prompts, and workflow defaults. Outer-loop harness optimization inspired by Meta-Harness (Lee et al., 2026). Use when user says \"优化技能\", \"meta optimize\", \"improve skills\", \"分析使用记录\", or wants to optimize ARIS's own harness components based on accumulated experience."
-argument-hint: "[target-skill-or-all]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: Analyze ARIS usage logs and propose optimizations to SKILL.md files, reviewer prompts, and workflow defaults. Outer-loop harness optimization inspired by Meta-Harness (Lee et al., 2026). Use when user says "优化技能", "meta optimize", "improve skills", "分析使用记录", or wants to optimize ARIS's own harness components based on accumulated experience.
+metadata:
+  argument-hint: '[target-skill-or-all]'
 ---
 
 # Meta-Optimize: Outer-Loop Harness Optimization for ARIS
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Analyze accumulated usage logs and propose optimizations for: **$ARGUMENTS**
 
@@ -188,12 +191,12 @@ For each optimization target, generate a concrete diff:
 
 ### Step 4: Fresh-Agent Review of Patches (same-family provisional)
 
-Send each patch to GPT-5.6-Sol xhigh for adversarial review:
+Send each patch to the configured Codex reviewer for adversarial review:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: meta_optimize_review
+  fork_turns: none
   message: |
     You are reviewing a proposed optimization to an ARIS SKILL.md file.
     

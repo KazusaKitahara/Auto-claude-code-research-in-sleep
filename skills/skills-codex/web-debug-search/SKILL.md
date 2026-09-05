@@ -1,8 +1,8 @@
 ---
 name: web-debug-search
 description: Search GitHub, Stack Exchange, Chinese technical communities, official documentation, and general developer web sources for software errors, compatibility problems, API usage questions, and real-world workarounds. Use for debugging and discovery only; results are not paper-citation evidence.
-argument-hint: "[error-or-question] [— sources: auto|github|stackexchange|chinese-tech|general-web|all (comma-separated)] [— language: auto|en|zh|both]"
-allowed-tools: WebSearch, WebFetch
+metadata:
+  argument-hint: '[error-or-question] [— sources: auto|github|stackexchange|chinese-tech|general-web|all (comma-separated)] [— language: auto|en|zh|both]'
 ---
 
 # Web Debug Search

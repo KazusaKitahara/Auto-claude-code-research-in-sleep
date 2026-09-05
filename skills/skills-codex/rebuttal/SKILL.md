@@ -1,11 +1,14 @@
 ---
 name: rebuttal
-description: "Workflow 4: Submission rebuttal pipeline. Parses external reviews, enforces coverage and grounding, drafts a safe text-only rebuttal under venue limits, and manages follow-up rounds. Use when user says \"rebuttal\", \"reply to reviewers\", \"ICML rebuttal\", \"OpenReview response\", or wants to answer external reviews safely."
-argument-hint: "[paper-path-or-review-bundle]"
-allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, Skill
+description: 'Workflow 4: Submission rebuttal pipeline. Parses external reviews, enforces coverage and grounding, drafts a safe text-only rebuttal under venue limits, and manages follow-up rounds. Use when user says "rebuttal", "reply to reviewers", "ICML rebuttal", "OpenReview response", or wants to answer external reviews safely.'
+metadata:
+  argument-hint: '[paper-path-or-review-bundle]'
 ---
 
 # Workflow 4: Rebuttal
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Prepare and maintain a grounded, venue-compliant rebuttal for: **$ARGUMENTS**
 
@@ -40,8 +43,8 @@ Workflow 4:   rebuttal (post-submission external reviews)
 
 - **VENUE = `ICML`** — Default venue. Override if needed.
 - **RESPONSE_MODE = `TEXT_ONLY`** — v1 default.
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Used via Codex MCP for internal stress-testing.
-- **REVIEWER_BACKEND = `codex`** — Default: Codex xhigh stress tester. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex xhigh. See `../shared-references/reviewer-routing.md`.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
+- **REVIEWER_BACKEND = `codex`** — Default: Codex stress tester at the configured effort. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and report the unavailable route; use the configured reviewer only when that fallback is authorized. See `../shared-references/reviewer-routing.md`.
 - **MAX_INTERNAL_DRAFT_ROUNDS = 2** — draft → lint → revise.
 - **MAX_STRESS_TEST_ROUNDS = 1** — One Codex MCP critique round.
 - **MAX_FOLLOWUP_ROUNDS = 3** — per reviewer thread.
@@ -216,8 +219,8 @@ Run all lints:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: rebuttal_review
+  fork_turns: none
   message: |
     Stress-test this rebuttal draft:
     [raw reviews + issue board + draft + venue rules]

@@ -1,8 +1,8 @@
 ---
 name: wiki-enrich
-description: "Fill in the per-paper TODO sections of research-wiki/papers/<slug>.md pages that literature-ingest skills leave as bare scaffolds. Use when user says 'enrich wiki', 'fill paper TODOs', 'wiki body 補完', '把 paper 摘要寫進 wiki', 'research-wiki 自動填', or after a batch ingest that left papers/ as TODO scaffolds."
-argument-hint: "[target: slug|missing|all] [--source alphaxiv|deepxiv|arxiv|auto] [--force] [--max N]"
-allowed-tools: Bash(*), Read, Write, Edit, Glob, Grep, WebFetch
+description: Fill evidence-backed per-paper sections in an existing research wiki after literature ingestion. Use for enrich wiki、补全文献笔记、填充摘要与方法; preserve existing notes and mark unavailable full-text evidence.
+metadata:
+  argument-hint: '[target: slug|missing|all] [--source alphaxiv|deepxiv|arxiv|auto] [--force] [--max N]'
 ---
 
 # Wiki Enrich: Fill Paper TODO Sections (Karpathy LLM-Wiki)

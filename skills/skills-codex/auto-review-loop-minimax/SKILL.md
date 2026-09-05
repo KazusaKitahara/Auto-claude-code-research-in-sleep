@@ -214,7 +214,7 @@ When loop ends (positive assessment or max rounds):
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: For a demonstrated file-size limit, use a permitted literal-safe writer or smaller chunks. Preserve the intended content and current filesystem permissions; a permission denial is not a file-size problem.
 
 - Be honest — include negative results and failed experiments
 - Do NOT hide weaknesses to game a positive score

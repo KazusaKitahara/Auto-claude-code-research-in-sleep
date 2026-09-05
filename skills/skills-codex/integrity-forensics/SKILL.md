@@ -1,7 +1,8 @@
 ---
 name: integrity-forensics
-description: "Run the Anti-Autoresearch integrity-forensics DETERMINISTIC slice (numeric core + rules-only reporter) against a paper via a SHA-pinned thin launcher, then convert the verdict into a typed policy gate (BLOCK/WARN/NO_NEW_BLOCKER) and an append-only obligations ledger. Codex-native limitation: upstream ships no Codex-native auditor pack, so the full nine-dimension semantic sweep requires a Claude Code session — this pack runs the honestly-scoped deterministic-only mode (it can flag, it can never say CLEAN). Use when user says \"integrity forensics\", \"forensic audit this paper\", \"投稿前自查诚信\"."
-argument-hint: "[paper-dir | pdf | arxiv-id]"
+description: 'Run the Anti-Autoresearch integrity-forensics DETERMINISTIC slice (numeric core + rules-only reporter) against a paper via a SHA-pinned thin launcher, then convert the verdict into a typed policy gate (BLOCK/WARN/NO_NEW_BLOCKER) and an append-only obligations ledger. Codex-native limitation: upstream ships no Codex-native auditor pack, so the full nine-dimension semantic sweep requires a Claude Code session — this pack runs the honestly-scoped deterministic-only mode (it can flag, it can never say CLEAN). Use when user says "integrity forensics", "forensic audit this paper", "投稿前自查诚信".'
+metadata:
+  argument-hint: '[paper-dir | pdf | arxiv-id]'
 ---
 
 # Integrity Forensics — thin launcher (Codex-native: deterministic slice)
@@ -76,7 +77,7 @@ Resolve `forensics_gate.py` via the canonical helper chain
 
 ```bash
 python3 "$GATE_HELPER" evaluate --report "$PAPER_DIR/report.json" --paper-dir "$PAPER_DIR" \
-    --anti-ar-commit "$ANTI_AR_COMMIT" --executor-model "codex-gpt-5.6-sol"
+    --anti-ar-commit "$ANTI_AR_COMMIT" --executor-model "<actual-executor-model>"
 ```
 
 Policy: `HARD_FLAGS` → **BLOCK** · `REVIEW_UNAVAILABLE` → **BLOCK** (which a

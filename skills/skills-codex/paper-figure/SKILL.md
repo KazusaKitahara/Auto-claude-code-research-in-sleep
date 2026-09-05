@@ -5,6 +5,9 @@ description: "Generate publication-quality figures and tables from experiment re
 
 # Paper Figure: Publication-Quality Plots from Experiment Data
 
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
+
 Generate all figures and tables for a paper based on: **$ARGUMENTS**
 
 ## Scope: What This Skill Can and Cannot Do
@@ -28,7 +31,7 @@ Generate all figures and tables for a paper based on: **$ARGUMENTS**
 - **COLOR_PALETTE = `tab10`** — Default matplotlib color cycle. Options: `tab10`, `Set2`, `colorblind` (deuteranopia-safe)
 - **FONT_SIZE = 10** — Base font size (matches typical conference body text)
 - **FIG_DIR = `figures/`** — Output directory for generated figures
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via a secondary Codex agent for figure quality review.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 
 ## Inputs
 
@@ -201,12 +204,12 @@ Save all snippets to `figures/latex_includes.tex` for easy copy-paste into the p
 
 ### Step 7: Figure Quality Review with REVIEWER_MODEL
 
-Send figure descriptions and captions to GPT-5.6-Sol for review:
+Send figure descriptions and captions to Codex for review:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: paper_figure_review
+  fork_turns: none
   message: |
     Review these figure/table plans for a [VENUE] submission.
 

@@ -1,11 +1,14 @@
 ---
 name: citation-audit
-description: "Zero-context verification that every bibliographic entry in the paper is real, correctly attributed, and used in a context the cited paper actually supports — catching hallucinated authors, wrong years, fabricated venues, version mismatches, and wrong-context citations. Use when user says \"审查引用\", \"check citations\", \"citation audit\", \"verify references\", \"引用核对\", or before submission to ensure bibliography integrity."
-argument-hint: "[paper-directory-or-bib-file] [--uncited] [— soft-only]"
-allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write, WebSearch, WebFetch
+description: Zero-context verification that every bibliographic entry in the paper is real, correctly attributed, and used in a context the cited paper actually supports — catching hallucinated authors, wrong years, fabricated venues, version mismatches, and wrong-context citations. Use when user says "审查引用", "check citations", "citation audit", "verify references", "引用核对", or before submission to ensure bibliography integrity.
+metadata:
+  argument-hint: '[paper-directory-or-bib-file] [--uncited] [— soft-only]'
 ---
 
 # Citation Audit
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 > **Codex assurance:** base audit artifacts record
 > `review_independence: same-family` and `acceptance_status: provisional`.
@@ -43,7 +46,7 @@ The dangerous citation problems are **not** wildly fake citations — those are 
 
 ## Constants
 
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Fresh Codex reviewer with web access; same-family provisional in the base mirror.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **CONTEXT_POLICY = `fresh`** — Each audit run uses a new reviewer thread (REVIEWER_BIAS_GUARD). Continue only with `send_input` when explicitly resuming the same audit.
 - **WEB_SEARCH = required** — The reviewer must perform real web/DBLP/arXiv lookups, not pattern-match from memory.
 - **OUTPUT = `CITATION_AUDIT.md`** — Human-readable per-entry verdict report.
@@ -84,8 +87,8 @@ For each **cited** bib entry — i.e., each key in `cited_keys` with at least on
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: citation_audit_review
+  fork_turns: none
   message: |
     You are auditing a bibliographic entry. Use web/DBLP/arXiv search.
 
@@ -419,13 +422,13 @@ The artifact conforms to the schema in `shared-references/assurance-contract.md`
   },
   "trace_path":       ".aris/traces/citation-audit/<date>_run<NN>/",
   "thread_id":        "<codex mcp thread id>",
-  "executor_model":   "codex-gpt-5.6-sol",
+  "executor_model":   "<actual model identifier>",
   "executor_family":  "openai",
-  "reviewer_model":   "gpt-5.6-sol",
+  "reviewer_model":   "<actual model identifier>",
   "reviewer_family":  "openai",
   "review_independence": "same-family",
   "acceptance_status": "provisional",
-  "reviewer_reasoning": "xhigh",
+  "reviewer_reasoning": "<actual configured effort>",
   "generated_at":     "<UTC ISO-8601>",
   "details": {
     "total_entries":  <int>,                 // count of audited cited entries (= |cited_keys|), NOT the bib-file size

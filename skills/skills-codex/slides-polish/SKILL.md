@@ -1,11 +1,14 @@
 ---
 name: slides-polish
-description: "Per-page Codex review + targeted python-pptx / Beamer fixes for academic talk slides. Use AFTER /paper-slides (or any externally generated PPTX/Beamer) when the deck looks 'mostly OK' but the user wants a final pass that aligns visual weight with a reference, bumps PPTX fonts to projector-readable size, kills italic style leaks, fixes text-frame overflow, and catches per-slide layout drift. Trigger phrases: \"polish slides\", \"slides 排版不对\", \"PPTX 字体太小\", \"和 Beamer 比一下\", \"per-page review\", \"和 codex 一页一页过\"."
-argument-hint: "[slides-dir-or-pptx] — reference: <ref-pdf> [— style: generic | why-rf | neurips | icml | iclr | cvpr] [— effort: lite | balanced | max | beast] [— interactive]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, spawn_agent
+description: 'Per-page Codex review + targeted python-pptx / Beamer fixes for academic talk slides. Use AFTER /paper-slides (or any externally generated PPTX/Beamer) when the deck looks ''mostly OK'' but the user wants a final pass that aligns visual weight with a reference, bumps PPTX fonts to projector-readable size, kills italic style leaks, fixes text-frame overflow, and catches per-slide layout drift. Trigger phrases: "polish slides", "slides 排版不对", "PPTX 字体太小", "和 Beamer 比一下", "per-page review", "和 codex 一页一页过".'
+metadata:
+  argument-hint: '[slides-dir-or-pptx] — reference: <ref-pdf> [— style: generic | why-rf | neurips | icml | iclr | cvpr] [— effort: lite | balanced | max | beast] [— interactive]'
 ---
 
 # Slides Polish: Per-Page Codex Review + Targeted Layout Fixes
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Polish a generated slide deck — Beamer (`.tex` + `.pdf`) and/or PPTX — by
 running **per-page Codex review** against a reference visual and applying
@@ -36,8 +39,8 @@ manually) — do not run `/slides-polish` for that.
 
 ## Constants
 
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Codex MCP model for per-page review. xhigh reasoning is non-negotiable (see `../shared-references/effort-contract.md`). If the account has no `gpt-5.6-sol` access, follow the capability fallback chain in `../shared-references/reviewer-routing.md` (`gpt-5.5`+`xhigh`; `gpt-5.4` only as an explicit user override).
-- **REVIEWER_REASONING = `xhigh`** — Hard invariant; the effort knob does **not** change this.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
+- **REVIEWER_REASONING** = inherit the current model configuration unless explicitly overridden.
 - **CONTEXT_POLICY = `fresh`** — Each per-page review uses a **fresh** Codex reviewer call (`spawn_agent`, never `send_input`). See `../shared-references/reviewer-independence.md`. This prevents the reviewer from anchoring on prior fixes.
 - **REFERENCE_VISUAL** — Path to a PDF the user wants the polished deck to **align with** in visual weight (typography proportion, color discipline, callout density). Required input. If polishing PPTX only, the **Beamer compile of the same talk** is the ideal reference. If no reference exists yet, ask the user; do not silently default to "Why-RF" or any preset.
 - **STYLE_PRESET = `generic`** — Default style anchor. Other options: `why-rf` (academic-minimalist, derived from a 2025 academic talk), `neurips`, `icml`, `iclr`, `cvpr`. Presets influence color discipline + element library; the **reference PDF is the visual ground truth**, not the preset.
@@ -191,8 +194,8 @@ Schema notes:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: slides_polish_review
+  fork_turns: none
   message: |
     Triage pass. For each of N slides in <pptx-pdf-path>, compared against
     <reference-pdf-path>, give one line:
@@ -225,8 +228,8 @@ recompile or save, move to next slide.
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: slides_polish_review
+  fork_turns: none
   message: |
     SLIDE K review. Compare PPTX page K against reference page K.
 
@@ -489,7 +492,7 @@ See `../shared-references/effort-contract.md` for the full contract.
 | `max` | Per-page review on **every** slide (including PASS). ~2.5× tokens. |
 | `beast` | `max` + a second polish round after Phase-4 re-triage; chase remaining ≤2pt overfull / minor wraps. ~5× tokens. |
 
-`reasoning_effort: xhigh` is non-negotiable across all levels.
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 
 ## Hard Invariants
 
@@ -503,7 +506,7 @@ These are non-negotiable:
 6. **Fresh-context independence**: per-page Codex calls are fresh `spawn_agent` calls, not `send_input`. Reviewer never sees prior fix lists; base verdicts are same-family provisional.
 7. **Anonymity placeholders fail closed.** If a Codex fix proposes filling in a real title, count, or URL where a placeholder was, the skill rejects it and surfaces the proposal for human review. See `experiment-integrity.md`.
 8. **Page numbers stay ≤ 16pt.** Why-RF discipline; never bump them.
-9. **`reasoning_effort: xhigh`** is invariant across all `effort` levels.
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 10. **Robust shape selection**: edits use unique-prefix `text_frame.text` matching with assert-unique semantics. If duplicate matches, abort and request disambiguation.
 
 ## Review Tracing

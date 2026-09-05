@@ -1,11 +1,14 @@
 ---
 name: claims-drafting
-description: "Draft patent claims for an invention. Use when user says \"撰写权利要求\", \"draft claims\", \"写权利要求书\", \"claim drafting\", or wants to create patent claims. The core skill of the patent pipeline."
-argument-hint: "[invention-disclosure-path]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
+description: Draft patent claims for an invention. Use when user says "撰写权利要求", "draft claims", "写权利要求书", "claim drafting", or wants to create patent claims. The core skill of the patent pipeline.
+metadata:
+  argument-hint: '[invention-disclosure-path]'
 ---
 
 # Claims Drafting: The Core Patent Skill
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Draft patent claims based on: **$ARGUMENTS**
 
@@ -13,7 +16,7 @@ This is the most critical skill in the patent pipeline. Claims define the legal 
 
 ## Constants
 
-- `REVIEWER_MODEL = gpt-5.6-sol` — External examiner for claim quality review
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - `MAX_CLAIM_REVISION_ROUNDS = 3` — Maximum revision iterations
 - `CLAIM_STYLE = "auto"` — `US` (Jepson or open), `EP` (two-part mandatory), `CN` (two-part), `auto` (detect from jurisdiction)
 - `MIN_INDEPENDENT_CLAIMS = 2` — Typically method + system. For utility model (实用新型): apparatus/device only, NO method claims.
@@ -132,12 +135,12 @@ If any element lacks specification support, add it to the specification requirem
 
 ### Step 5: Fresh-Agent Examiner Review (same-family provisional by default)
 
-Start the examiner review with a dedicated Codex reviewer agent at xhigh reasoning:
+Start the examiner review with a dedicated Codex reviewer agent at the current configured reasoning effort:
 
 ```
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: claims_drafting_review
+  fork_turns: none
   message: |
     You are a senior patent examiner at the [USPTO/CNIPA/EPO].
     Review the following patent claims for quality and patentability.

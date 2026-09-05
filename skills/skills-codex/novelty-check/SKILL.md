@@ -5,12 +5,15 @@ description: "Verify research idea novelty against recent literature. Use when u
 
 # Novelty Check Skill
 
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
+
 Check whether a proposed method/idea has already been done in the literature: **$ARGUMENTS**
 
 ## Constants
 
-- REVIEWER_MODEL = `gpt-5.6-sol` — Model used via a secondary Codex agent. Must be an OpenAI model (e.g., `gpt-5.6-sol`, `o3`, `gpt-4o`)
-- **REVIEWER_BACKEND = `codex`** — Default: Codex xhigh reviewer. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and fall back to Codex xhigh.
+- REVIEWER_MODEL = current agent model unless the user explicitly selects another available reviewer.
+- **REVIEWER_BACKEND = `codex`** — Default: Codex review at the current configured effort reviewer. Use `--reviewer: oracle-pro` only when explicitly requested; if Oracle is unavailable, warn and report the unavailable route; use the configured reviewer only when that fallback is authorized.
 
 ## Instructions
 
@@ -40,9 +43,9 @@ For EACH core claim, search using ALL available sources:
 3. **Read abstracts**: For each potentially overlapping paper, WebFetch its abstract and related work section
 
 ### Phase C: Fresh-Agent Verification (same-family provisional by default)
-Call REVIEWER_MODEL via `spawn_agent` (`spawn_agent`) with xhigh reasoning:
+Call REVIEWER_MODEL via `spawn_agent` (`spawn_agent`) with the current configured reasoning effort:
 ```
-reasoning_effort: xhigh
+# Inherit the current model and reasoning effort unless explicitly overridden.
 ```
 Prompt should include:
 - The proposed method description

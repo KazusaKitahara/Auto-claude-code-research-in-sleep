@@ -1,8 +1,8 @@
 ---
 name: paper-talk
-description: "End-to-end conference talk pipeline: paper → slide outline → Beamer + PPTX → per-page polish → assurance checks (claim / citation / anonymity) → final export and report. Default-good for academic conference talks (NeurIPS / ICML / ICLR / VALSE / 投稿 talks). Trigger phrases: \"做 talk\", \"做 PPT 全流程\", \"talk pipeline\", \"end-to-end slides\", \"做演讲\", \"conference talk full workflow\". Use when the user wants the complete talk artifact, not just a slide deck."
-argument-hint: "[paper-dir] [— talk_type: oral | spotlight | poster-talk | invited] [— minutes: N] [— assurance: draft | polished | conference-ready] [— reference: <pdf>] [— style: generic | why-rf | <venue>] [— style-ref: <paper-source>] [— effort: lite | balanced | max | beast] [— anonymous]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Skill, spawn_agent
+description: 'End-to-end conference talk pipeline: paper → slide outline → Beamer + PPTX → per-page polish → assurance checks (claim / citation / anonymity) → final export and report. Default-good for academic conference talks (NeurIPS / ICML / ICLR / VALSE / 投稿 talks). Trigger phrases: "做 talk", "做 PPT 全流程", "talk pipeline", "end-to-end slides", "做演讲", "conference talk full workflow". Use when the user wants the complete talk artifact, not just a slide deck.'
+metadata:
+  argument-hint: '[paper-dir] [— talk_type: oral | spotlight | poster-talk | invited] [— minutes: N] [— assurance: draft | polished | conference-ready] [— reference: <pdf>] [— style: generic | why-rf | <venue>] [— style-ref: <paper-source>] [— effort: lite | balanced | max | beast] [— anonymous]'
 ---
 
 # Paper Talk: End-to-End Conference Talk Pipeline
@@ -40,7 +40,7 @@ These are non-negotiable across all phases:
 7. **Anonymity fail-closed.** If any audit (or any Codex fix proposal) would replace a placeholder with a real title / count / URL, the workflow halts and surfaces the proposal for human review. See `../shared-references/experiment-integrity.md`.
 8. **Style references are guidance, not text source.** A `— reference:` PDF or `— style:` preset informs visual weight and structural rhythm; never copy prose, examples, slide titles, or speaker-note text from the reference.
 9. **Final report cannot be `conference-ready` unless required audits pass.** Phase 6 verifies and downgrades verdict if audits fail.
-10. **`reasoning_effort: xhigh`** is invariant across all `effort` levels for any Codex call invoked by sub-skills.
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 
 ## Constants
 
@@ -53,7 +53,7 @@ These are non-negotiable across all phases:
 - **ASPECT_RATIO = `16:9`** — Inherited by `/paper-slides`.
 - **STYLE_PRESET** — `generic` if not passed; `why-rf` and venue presets supported by `/slides-polish`.
 - **REFERENCE_VISUAL** — Required when `assurance ≥ polished`. The Beamer compile of this talk is an acceptable self-reference; an external academic talk PDF is preferred when the user wants visual alignment beyond defaults.
-- **AUTO_PROCEED = false** — Each major phase pauses for user approval. Set `true` only when explicitly requested.
+- **AUTO_PROCEED = true** — Continue phases already authorized by the task. Respect explicit checkpoints; ask for unresolved scientific decisions or new external/resource commitments, not routine preparation.
 
 ## Inputs
 
@@ -336,7 +336,7 @@ See `../shared-references/effort-contract.md`.
 | `max` | `/slides-polish` runs `max` (per-page review on every slide). Phase-4 audits read all artefacts in full. |
 | `beast` | `/slides-polish` runs `beast` (second polish round). Phase-4 audits include extended assurance checks; final report adds an executive summary. |
 
-`reasoning_effort: xhigh` is invariant.
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 
 `assurance` and `effort` are **independent axes**. The user may legally
 combine `effort: lite, assurance: conference-ready` to mean "fast pipeline,

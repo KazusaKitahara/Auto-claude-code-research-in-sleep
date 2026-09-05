@@ -5,6 +5,9 @@ description: "Workflow 1.5: Bridge between idea discovery and auto review. Reads
 
 # Workflow 1.5: Experiment Bridge
 
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
+
 Implement and deploy experiments from plan: **$ARGUMENTS**
 
 ## Overview
@@ -21,7 +24,7 @@ refine-logs/FINAL_PROPOSAL.md
 ## Constants
 
 - **AUTO_DEPLOY = true** — Automatically deploy experiments after implementation. Set `false` to review code before deploying.
-- **CODE_REVIEW = true** — Secondary Codex reviewer with xhigh reasoning reviews experiment code before deployment. Catches logic bugs before wasting GPU hours. Set `false` to skip.
+- **CODE_REVIEW = true** — Secondary Codex reviewer with the current configured reasoning effort reviews experiment code before deployment. Catches logic bugs before wasting GPU hours. Set `false` to skip.
 - **SANITY_FIRST = true** — Run the sanity-stage experiment first (smallest, fastest) before launching the rest. Catches setup bugs early.
 - **MAX_PARALLEL_RUNS = 4** — Maximum number of experiments to deploy in parallel (limited by available GPUs).
 - **BASE_REPO = false** — GitHub repo URL to use as a base codebase. When set, clone it first and implement experiments on top of it.
@@ -111,12 +114,12 @@ For each milestone (in order), write the experiment scripts:
 
 Skip this step if `CODE_REVIEW` is `false`.
 
-Before deploying, send the experiment code to a secondary Codex reviewer with xhigh reasoning:
+Before deploying, send the experiment code to a secondary Codex reviewer with the current configured reasoning effort:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: experiment_bridge_review
+  fork_turns: none
   message: |
     Review the following experiment implementation for correctness.
 
@@ -334,7 +337,7 @@ Ready for Workflow 2:
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: For a demonstrated file-size limit, use a permitted literal-safe writer or smaller chunks. Preserve the intended content and current filesystem permissions; a permission denial is not a file-size problem.
 - **CRITICAL — Evaluation must use dataset ground truth.** Always compare model predictions against the dataset's actual labels/targets, never another model's output. If the task has official eval scripts, prefer them.
 - **Follow the plan.** Do not invent experiments not in EXPERIMENT_PLAN.md. If you think something is missing, note it but don't add it.
 - **Sanity first.** Never deploy a full suite without verifying the sanity stage passes.

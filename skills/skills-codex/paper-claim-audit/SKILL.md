@@ -1,11 +1,14 @@
 ---
 name: paper-claim-audit
-description: "Zero-context verification that every number, comparison, and scope claim in the paper matches raw result files. Uses a fresh Codex reviewer with no prior context; base output is same-family provisional. Use when user says \"审查论文数据\", \"check paper claims\", \"verify numbers\", \"论文数字核对\", or before submission to ensure paper-to-evidence fidelity."
-argument-hint: "[paper-directory]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: Zero-context verification that every number, comparison, and scope claim in the paper matches raw result files. Uses a fresh Codex reviewer with no prior context; base output is same-family provisional. Use when user says "审查论文数据", "check paper claims", "verify numbers", "论文数字核对", or before submission to ensure paper-to-evidence fidelity.
+metadata:
+  argument-hint: '[paper-directory]'
 ---
 
 # Paper Claim Audit: Zero-Context Evidence Verification
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 > **Codex assurance:** write `review_independence: same-family` and
 > `acceptance_status: provisional` into base audit JSON. A fresh Codex PASS may
@@ -81,14 +84,14 @@ NARRATIVE_REPORT.md, PAPER_PLAN.md, findings.md
 Any .md file that is an executor-written summary
 ```
 
-### Step 2: Fresh Reviewer Audit (GPT-5.6-Sol — NEW thread, no reply)
+### Step 2: Fresh Reviewer Audit (Codex — NEW thread, no reply)
 
 **CRITICAL: Use a fresh reviewer agent every run.** Never reuse an old reviewer context for this audit.
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: ultra
+  task_name: paper_claim_audit_review
+  fork_turns: none
   message: |
     You are a paper-to-evidence auditor. You have ZERO prior context about
     this research. You will receive only paper source files and raw result
@@ -168,7 +171,7 @@ Parse the reviewer's response and write `PAPER_CLAIM_AUDIT.md`:
 # Paper Claim Audit Report
 
 **Date**: [today]
-**Auditor**: GPT-5.6-Sol ultra (fresh zero-context thread)
+**Auditor**: the configured Codex reviewer (fresh zero-context thread)
 **Paper**: [paper title from tex]
 
 ## Overall Verdict: [PASS | WARN | FAIL]
@@ -289,13 +292,13 @@ The artifact conforms to the schema in `shared-references/assurance-contract.md`
   },
   "trace_path":       ".aris/traces/paper-claim-audit/<date>_run<NN>/",
   "thread_id":        "<codex mcp thread id>",
-  "executor_model":   "codex-gpt-5.6-sol",
+  "executor_model":   "<actual model identifier>",
   "executor_family":  "openai",
-  "reviewer_model":   "gpt-5.6-sol",
+  "reviewer_model":   "<actual model identifier>",
   "reviewer_family":  "openai",
   "review_independence": "same-family",
   "acceptance_status": "provisional",
-  "reviewer_reasoning": "ultra",
+  "reviewer_reasoning": "<actual configured effort>",
   "generated_at":     "<UTC ISO-8601>",
   "details": {
     "total_claims":   <int>,

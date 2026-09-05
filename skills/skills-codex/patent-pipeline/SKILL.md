@@ -1,8 +1,8 @@
 ---
 name: patent-pipeline
-description: "Full patent drafting pipeline from invention description to jurisdiction-formatted filing documents. Supports CN (CNIPA), US (USPTO), EP (EPO). Supports invention patents and utility models. Use when user says \"写专利\", \"patent pipeline\", \"专利申请\", \"draft patent\", \"写权利要求书\", or wants to draft a complete patent application."
-argument-hint: "[invention-description — jurisdiction]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Skill
+description: Full patent drafting pipeline from invention description to jurisdiction-formatted filing documents. Supports CN (CNIPA), US (USPTO), EP (EPO). Supports invention patents and utility models. Use when user says "写专利", "patent pipeline", "专利申请", "draft patent", "写权利要求书", or wants to draft a complete patent application.
+metadata:
+  argument-hint: '[invention-description — jurisdiction]'
 ---
 
 # Patent Pipeline: From Invention to Filing
@@ -38,9 +38,9 @@ Patents are about **protecting inventions** (legal scope), not publishing result
 
 - **JURISDICTION = `CN`** — Target patent jurisdiction. Options: `CN` (CNIPA), `US` (USPTO), `EP` (EPO), `ALL` (generate all three). Override via argument (e.g., `/patent-pipeline "invention — US"`).
 - **PATENT_TYPE = `invention`** — `invention` (发明专利, 20 year protection) or `utility_model` (实用新型, CN only, 10 year protection, apparatus claims only). Override via argument.
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for examiner-style review.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **MAX_REVIEW_ROUNDS = 2** — Maximum review-revision cycles.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**. Patent applications require inventor judgment at every stage. Set `true` only if user explicitly requests autonomous mode.
+- **AUTO_PROCEED = true** — Continue phases already authorized by the task. Respect explicit checkpoints; ask for unresolved scientific decisions or new external/resource commitments, not routine preparation.
 - **LANGUAGE = `auto`** — Output language. Auto-detected from jurisdiction: CN->Chinese, US->English, EP->English. Override explicitly if needed.
 - **OUTPUT_DIR = `patent/`** — Directory for generated patent files.
 - **OUTPUT_FORMAT = `markdown`** — Draft format. `markdown` for review, `docx` for filing-ready.
@@ -249,7 +249,7 @@ Invoke `/patent-review`:
 /patent-review "patent/"
 ```
 
-This runs 2 rounds of examiner-style review via GPT-5.6-Sol xhigh. The examiner evaluates clarity, written description, enablement, novelty, non-obviousness, and claim scope.
+This runs 2 rounds of examiner-style review via the configured Codex reviewer. The examiner evaluates clarity, written description, enablement, novelty, non-obviousness, and claim scope.
 
 **State**: Write `PATENT_STATE.json` with `phase: 4` and review score.
 

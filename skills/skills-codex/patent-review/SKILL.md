@@ -1,11 +1,14 @@
 ---
 name: patent-review
-description: "Get an external patent examiner review of a patent application. Use when user says \"专利审查\", \"patent review\", \"审查意见\", \"examiner review\", or wants critical feedback on patent claims and specification."
-argument-hint: "[patent-directory-or-scope]"
-allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit
+description: Get an external patent examiner review of a patent application. Use when user says "专利审查", "patent review", "审查意见", "examiner review", or wants critical feedback on patent claims and specification.
+metadata:
+  argument-hint: '[patent-directory-or-scope]'
 ---
 
-# Patent Examiner Review via Codex MCP (xhigh reasoning)
+# Patent Examiner Review via Codex MCP (configured reasoning effort)
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Get a multi-round patent examiner review of the patent application based on: **$ARGUMENTS**
 
@@ -13,9 +16,9 @@ Adapted from `/research-review`. The reviewer persona is a patent examiner, not 
 
 ## Constants
 
-- `REVIEWER_MODEL = gpt-5.6-sol` — Model used via Codex MCP
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - `REVIEW_ROUNDS = 2` — Number of review rounds
-- `EXAMINER_PERSONA = "patent-examiner"` — GPT-5.6-Sol persona
+- `EXAMINER_PERSONA = "patent-examiner"` — Codex persona
 
 ## Prerequisites
 
@@ -44,12 +47,12 @@ Before calling the external reviewer, compile a comprehensive briefing:
 
 ### Step 2: Round 1 — Full Examiner Review
 
-Send to `REVIEWER_MODEL` via `spawn_agent` with xhigh reasoning:
+Send to `REVIEWER_MODEL` via `spawn_agent` with the current configured reasoning effort:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: patent_review_review
+  fork_turns: none
   message: |
     You are a senior patent examiner at the [USPTO/CNIPA/EPO].
     Examine this patent application and issue a detailed office action.
@@ -195,7 +198,7 @@ Write `patent/PATENT_REVIEW.md`:
 ## Key Rules
 
 - The reviewer persona must be a patent examiner, not a paper reviewer or academic.
-- Always use `model_reasoning_effort: "xhigh"` for maximum analysis depth.
+Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
 - Address CRITICAL and MAJOR issues before proceeding to the next phase.
 - Document all changes in the review report for traceability.
 - If the patentability score is below 5/10 after Round 2, recommend significant rework before filing.

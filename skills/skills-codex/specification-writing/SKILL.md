@@ -1,11 +1,14 @@
 ---
 name: specification-writing
-description: "Write the full patent specification from claims and invention disclosure. Use when user says \"撰写说明书\", \"write specification\", \"写说明书\", \"patent description\", or wants to draft the complete patent specification."
-argument-hint: "[claims-path]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Skill, WebSearch, WebFetch
+description: Write the full patent specification from claims and invention disclosure. Use when user says "撰写说明书", "write specification", "写说明书", "patent description", or wants to draft the complete patent specification.
+metadata:
+  argument-hint: '[claims-path]'
 ---
 
 # Specification Writing: Section-by-Section Patent Description
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Write the patent specification based on: **$ARGUMENTS**
 
@@ -13,7 +16,7 @@ Adapted from `/paper-write` for patent specifications. The specification support
 
 ## Constants
 
-- `REVIEWER_MODEL = gpt-5.6-sol` — External reviewer for specification quality
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - `JURISDICTION = "auto"` — Inherit from pipeline or detect from args; `CN`, `US`, `EP`, `ALL`
 - `OUTPUT_FORMAT = "markdown"` — Markdown drafts; converted to filing format by `/jurisdiction-format`
 - `OUTPUT_DIR = "patent/"` — Base output directory
@@ -152,12 +155,12 @@ If any element lacks support, add the necessary description before proceeding.
 
 ### Step 10: Fresh-Agent Review (same-family provisional by default)
 
-Call `REVIEWER_MODEL` via a dedicated Codex reviewer agent at xhigh reasoning:
+Call `REVIEWER_MODEL` via a dedicated Codex reviewer agent at the current configured reasoning effort:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: specification_writing_review
+  fork_turns: none
   message: |
     You are a patent examiner reviewing a specification for completeness.
     CLAIMS: [all claims]

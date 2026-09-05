@@ -16,7 +16,7 @@ Default: `balanced` (current behavior, zero change for existing users).
 
 | Setting | Value | Why |
 |---------|-------|-----|
-| Codex reasoning_effort | **≥ xhigh** (deep-audit skills run `ultra` — tier table in `reviewer-routing.md`) | Reviewer quality is non-negotiable. `effort` never moves the reviewer tier in either direction — and ARIS `— effort: max` is NOT Codex `reasoning_effort: max` (different axes: pipeline workload vs reviewer reasoning depth) |
+| Codex model/effort | Inherit current configuration unless explicitly selected | Workload breadth and model reasoning are separate settings; see reviewer-routing.md |
 | DBLP/CrossRef citations | **on** | Citation integrity is non-negotiable |
 | Reviewer independence | **on** | Cross-model protocol is non-negotiable |
 | Experiment integrity | **on** | Fraud prevention is non-negotiable |
@@ -36,7 +36,7 @@ Current ARIS behavior. What existing users get today. No change.
 Go deeper than defaults. More papers, more ideas, more rounds, more detail.
 
 ### `beast` (~5-8x tokens)
-No budget limit. Every knob to maximum. For top-venue submission sprints.
+A broad workload preset within the user’s authorized scope and resource limits. For top-venue submission sprints.
 
 ## Per-Skill Profiles
 
@@ -71,7 +71,7 @@ No budget limit. Every knob to maximum. For top-venue submission sprints.
 
 | Skill | Dimension | lite | balanced | max | beast |
 |-------|-----------|------|----------|-----|-------|
-| auto-review-loop | max rounds | 2 | 3-4 | 6 | 8+ (until converged) |
+| auto-review-loop | max rounds | 2 | 3-4 | 6 | 8 (stop earlier on convergence or no progress) |
 | auto-review-loop | fixes per round | 1-2 | 3-4 | 4-6 | all actionable |
 | research-review | passes | 1 | 1 + follow-up | 1 + 2 follow-ups | 2 independent + cross-compare |
 | experiment-audit | depth | skip | basic 4 checks | full 6 checks | line-by-line + reproduce |
@@ -85,7 +85,7 @@ No budget limit. Every knob to maximum. For top-venue submission sprints.
 | paper-figure | caption reviews | 1 | 1 | 2 | 3 |
 | paper-write | abstract variants | 1 | 1 | 2 | 3 |
 | paper-write | related work depth | shallow | standard | deep | exhaustive |
-| paper-compile | fix attempts | 2 | 3 | 4 | until zero warnings |
+| paper-compile | fix attempts | 2 | 3 | 4 | resolve material compiler/rendering errors; assess warnings |
 | auto-paper-improvement | rounds | 1 | 2 | 3 | 5 |
 | paper-illustration | render iterations | 2 | 3 | 5 | 7 |
 | rebuttal | draft rounds | 1 | 2 | 3 | 5 |
@@ -116,10 +116,10 @@ Adjust constants:
 
 ## Transparency
 
-Every skill should print its effort configuration at the start:
+For a substantial run, state consequential workload assumptions briefly when useful:
 
 ```
-⚡ [effort: max] papers=25, ideas=16, rounds=6 | Codex: tier per reviewer-routing.md (floor xhigh)
+⚡ [effort: max] papers=25, ideas=16, rounds=6 | Codex: current configured model/effort
 ```
 
 ## Precedence

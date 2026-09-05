@@ -24,8 +24,8 @@ The reviewer must judge primary artifacts directly. The executor can define the 
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: independent_review
+  fork_turns: none
   message: |
     Review the project as a senior ML reviewer.
 
@@ -40,8 +40,8 @@ spawn_agent:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: independent_review
+  fork_turns: none
   message: |
     The main contribution is a new loss function that improves by 15%.
     I think the weak point is the ablation.
@@ -50,7 +50,7 @@ spawn_agent:
 
 ## Multi-Round Follow-Up
 
-When a skill uses multi-round review, reuse the same reviewer id with `send_input`, but still avoid injecting executor conclusions. Pass revised artifacts or targeted follow-up requests, not spin.
+When a skill uses multi-round review, reuse the same reviewer id with the available native follow-up tool, but still avoid injecting executor conclusions. Pass revised artifacts or targeted follow-up requests, not spin.
 
 ## Applies To
 

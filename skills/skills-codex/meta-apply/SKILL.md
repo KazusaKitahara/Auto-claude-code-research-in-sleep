@@ -1,8 +1,8 @@
 ---
 name: meta-apply
-description: "Privileged applier that LANDS meta-optimize / corpus-audit patches the user approved, with a fresh landing review and human approval. Base Codex review is same-family provisional. Use when the user says \"meta apply\", \"/meta-apply\", \"land the staged patches\", \"应用优化\", after a /meta-optimize run."
-argument-hint: "[patch-number-or-all]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: Privileged applier that LANDS meta-optimize / corpus-audit patches the user approved, with a fresh landing review and human approval. Base Codex review is same-family provisional. Use when the user says "meta apply", "/meta-apply", "land the staged patches", "应用优化", after a /meta-optimize run.
+metadata:
+  argument-hint: '[patch-number-or-all]'
 ---
 
 # Meta-Apply: the privileged landing gate for self-modification patches
@@ -40,8 +40,8 @@ never silently apply:
 
 1. **The human named THIS patch.** Apply only patches the user listed (`/meta-apply 1,3`
    or `all`); default to applying nothing.
-2. **Fresh landing review PASS, obtained now.** Spawn a fresh `gpt-5.6-sol`
-   reviewer via `spawn_agent` (`reasoning_effort: ultra`, read-only, paths-only per
+2. **Fresh landing review PASS, obtained now.** Spawn a fresh isolated Codex
+   reviewer via `spawn_agent` (the current configured reasoning effort, read-only, paths-only per
    [`reviewer-independence.md`](../shared-references/reviewer-independence.md)) on the
    staged `.diff` + its target. Ask: *does this change improve the harness without
    regressions; PASS or KILL + one-line reason.* Include the scope-limits block from

@@ -1,11 +1,14 @@
 ---
 name: paper-poster-html
-description: "DEFAULT poster pipeline — build an academic conference poster (ICML/NeurIPS/ICLR/CVPR/...) as a single HTML/CSS file with measurement-driven hard gates, real paper figures, a two-hue design-token system, and print-ready PDF via headless Chromium. Use when the user says \"做海报\", \"poster\", \"conference poster\", \"paper poster\", or asks to design/redo a research poster."
-argument-hint: "[paper-dir-or-pdf] [— venue: ICLR, canvas: 185x90cm landscape, venue-colors: true]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: DEFAULT poster pipeline — build an academic conference poster (ICML/NeurIPS/ICLR/CVPR/...) as a single HTML/CSS file with measurement-driven hard gates, real paper figures, a two-hue design-token system, and print-ready PDF via headless Chromium. Use when the user says "做海报", "poster", "conference poster", "paper poster", or asks to design/redo a research poster.
+metadata:
+  argument-hint: '[paper-dir-or-pdf] [— venue: ICLR, canvas: 185x90cm landscape, venue-colors: true]'
 ---
 
 # Paper Poster (HTML): measurement-gated poster generation
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 One HTML file styled for an exact print canvas (`@page { size: W H }`), rendered to PDF
 via Playwright print emulation. **Iterate by measuring, not eyeballing** — the screen
@@ -73,9 +76,7 @@ paper (.tex / PDF) ──► content plan + claim→evidence audit (fresh review
 
   If unresolved, the install is broken: abort and tell the user to re-install (Policy A
   — the gates ARE the skill; never improvise replacements).
-- **REVIEWER_MODEL** = `gpt-5.6-sol`, reasoning effort `xhigh`, **fresh reviewer agent per
-  review call** (a new `spawn_agent:` every time; never reuse a reviewer agent across
-  review boundaries).
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **CANVAS** — from the venue's official spec, looked up live in Phase 0. Never assume.
   (Known anchor: ICLR 2026 main = 185×90 cm landscape per its official printing
   service; ICML/NeurIPS commonly 60×36 in landscape; workshop posters often 61×91 cm
@@ -84,7 +85,7 @@ paper (.tex / PDF) ──► content plan + claim→evidence audit (fresh review
   + gold `#C9A24A` highlight + neutrals) for **all** venues. Venue packs are opt-in via
   `— venue-colors: true`. Purple-dominant accents (hue 250–285) are banned unless the
   user passes `— allow-purple: true`.
-- **AUTO_PROCEED = false** — wait for explicit confirmation at every 🚦 checkpoint.
+- **AUTO_PROCEED = true** — Continue phases already authorized by the task. Respect explicit checkpoints; ask for unresolved scientific decisions or new external/resource commitments, not routine preparation.
 - **OUTPUT_DIR** = `poster_html/` in the working directory.
 
 ## Workflow
@@ -151,8 +152,8 @@ never reverted.
 
    ```text
    spawn_agent:
-     model: gpt-5.6-sol
-     reasoning_effort: xhigh
+     task_name: paper_poster_html_review
+     fork_turns: none
      message: |
        Audit a conference-poster content plan against its source paper.
        Read these files yourself (no other context is provided):
@@ -292,8 +293,8 @@ executor framing:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: paper_poster_html_review
+  fork_turns: none
   message: |
     Final print-readiness audit of a conference poster. Read these files yourself:
     - poster_html/poster.html (final single-file poster)

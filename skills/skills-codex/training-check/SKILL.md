@@ -1,8 +1,8 @@
 ---
 name: training-check
-description: "Interactively monitor training metrics from the current Codex session, periodically checking WandB or fallback logs for NaN, divergence, plateaus, and broken runs."
-argument-hint: "[wandb-run-or-monitoring-brief]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: Interactively monitor training metrics from the current Codex session, periodically checking WandB or fallback logs for NaN, divergence, plateaus, and broken runs.
+metadata:
+  argument-hint: '[wandb-run-or-monitoring-brief]'
 ---
 
 # Training Check

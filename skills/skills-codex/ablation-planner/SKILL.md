@@ -1,10 +1,12 @@
 ---
 name: ablation-planner
-description: "Use when main results pass result-to-claim (`claim_supported = yes` or `partial`) and ablation studies are needed for paper submission. A secondary Codex agent designs ablations from a reviewer's perspective; the local executor reviews feasibility and implements."
-allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit
+description: Use when main results pass result-to-claim (`claim_supported = yes` or `partial`) and ablation studies are needed for paper submission. A secondary Codex agent designs ablations from a reviewer's perspective; the local executor reviews feasibility and implements.
 ---
 
 # Ablation Planner
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Systematically design ablation studies that answer the questions reviewers will ask. The reviewer agent leads the design; the local executor reviews feasibility and implements.
 
@@ -31,8 +33,8 @@ Read available project files to build the full picture:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: ablation_planner_review
+  fork_turns: none
   message: |
     You are a rigorous ML reviewer planning ablation studies.
     Given this method and results, design ablations that:

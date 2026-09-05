@@ -1,11 +1,14 @@
 ---
 name: paper-slides
-description: "Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper, with speaker notes and full talk script. Use when user says \"做PPT\", \"做幻灯片\", \"make slides\", \"conference talk\", \"presentation slides\", \"生成slides\", \"写演讲稿\", or wants beamer slides for a conference talk."
-argument-hint: "[paper-directory-or-talk-length]"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
+description: Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper, with speaker notes and full talk script. Use when user says "做PPT", "做幻灯片", "make slides", "conference talk", "presentation slides", "生成slides", "写演讲稿", or wants beamer slides for a conference talk.
+metadata:
+  argument-hint: '[paper-directory-or-talk-length]'
 ---
 
 # Paper Slides: From Paper to Conference Talk
+
+Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
+
 
 Generate conference presentation slides from: **$ARGUMENTS**
 
@@ -24,8 +27,8 @@ Unlike posters (single page, visual-first), slides tell a **temporal story**: ea
 - **SPEAKER_NOTES = true** — Generate `\note{}` blocks in beamer and corresponding PPTX notes. Set `false` for clean slides without notes.
 - **PAPER_DIR = `paper/`** — Directory containing the compiled paper.
 - **OUTPUT_DIR = `slides/`** — Output directory for all slide files.
-- **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for slide review.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**.
+- **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
+- **AUTO_PROCEED = true** — Continue phases already authorized by the task. Respect explicit checkpoints; ask for unresolved scientific decisions or new external/resource commitments, not routine preparation.
 - **COMPILER = `latexmk`** — LaTeX build tool.
 - **ENGINE = `pdflatex`** — LaTeX engine. Use `xelatex` for CJK text.
 
@@ -316,12 +319,12 @@ If page count differs significantly from outline (>2 slides off), investigate.
 
 ### Phase 5: Codex MCP Review
 
-Send the slide outline + selected LaTeX frames to GPT-5.6-Sol xhigh:
+Send the slide outline + selected LaTeX frames to the configured Codex reviewer:
 
 ```text
 spawn_agent:
-  model: gpt-5.6-sol
-  reasoning_effort: xhigh
+  task_name: paper_slides_review
+  fork_turns: none
   message: |
     Review this [TALK_TYPE] presentation ([TALK_MINUTES] min) for [VENUE].
 
@@ -524,7 +527,7 @@ The paper and code are available at the QR code on screen. I'm happy to take que
   ├── main.pdf              # Compiled slides (primary output)
   ├── presentation.pptx     # Editable PowerPoint
   ├── SLIDE_OUTLINE.md      # Slide-by-slide outline
-  ├── SLIDES_REVIEW.md      # GPT-5.6-Sol review feedback
+  ├── SLIDES_REVIEW.md      # Codex review feedback
   ├── speaker_notes.md      # Per-slide speaker notes
   ├── TALK_SCRIPT.md        # Full word-for-word talk script + Q&A
   ├── SLIDES_STATE.json     # State persistence
@@ -542,7 +545,7 @@ Next steps:
 
 ## Key Rules
 
-- **Large file handling**: If the Write tool fails due to file size, immediately retry using Bash (`cat << 'EOF' > file`) to write in chunks. Do NOT ask the user for permission — just do it silently.
+- **Large file handling**: For a demonstrated file-size limit, use a permitted literal-safe writer or smaller chunks. Preserve the intended content and current filesystem permissions; a permission denial is not a file-size problem.
 - **One message per slide.** If a slide has two ideas, split it into two slides.
 - **Do NOT fabricate data.** All numbers must come from `paper/sections/*.tex`.
 - **Bullet points only** — never full sentences on slides. Sentence fragments are fine.
