@@ -1,9 +1,13 @@
 ---
 name: "deepxiv"
-description: "Search and progressively read open-access academic papers through DeepXiv. Use when the user wants layered paper access, section-level reading, trending papers, or DeepXiv-backed literature retrieval."
+description: "Search and progressively read academic papers through DeepXiv, including sections, metadata, and trending papers. Use when layered retrieval or DeepXiv-backed literature access is useful."
 ---
 
 # DeepXiv Paper Search & Progressive Reading
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Search topic or paper ID: $ARGUMENTS
 
@@ -77,6 +81,7 @@ fi
 DEEPXIV_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/deepxiv_fetch.py" ] && DEEPXIV_FETCHER="$ARIS_REPO/tools/deepxiv_fetch.py"
 [ -z "$DEEPXIV_FETCHER" ] && [ -f tools/deepxiv_fetch.py ] && DEEPXIV_FETCHER="tools/deepxiv_fetch.py"
+[ -z "$DEEPXIV_FETCHER" ] && [ -f "$HOME/.agents/skills/deepxiv/deepxiv_fetch.py" ] && DEEPXIV_FETCHER="$HOME/.agents/skills/deepxiv/deepxiv_fetch.py"
 [ -z "$DEEPXIV_FETCHER" ] && [ -f ~/.codex/skills/deepxiv/deepxiv_fetch.py ] && DEEPXIV_FETCHER="$HOME/.codex/skills/deepxiv/deepxiv_fetch.py"
 
 # Smoke test (optional): resolved-but-non-functional adapter is not currently auto-demoted.

@@ -1,6 +1,6 @@
 ---
 name: "pixel-art"
-description: "Generate pixel art SVG illustrations for READMEs, docs, or slides. Use when user says \"\u753b\u50cf\u7d20\u56fe\", \"pixel art\", \"make an SVG illustration\", \"README hero image\", or wants a cute visual."
+description: "Create pixel-art-style SVG illustrations for a README, document, or slide. Use when pixel art or that specific SVG style is requested."
 ---
 
 # Pixel Art SVG Generator

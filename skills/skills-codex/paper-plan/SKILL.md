@@ -1,9 +1,11 @@
 ---
 name: "paper-plan"
-description: "Generate a structured paper outline from review conclusions and experiment results. Use when user says \\\"\u5199\u5927\u7eb2\\\", \\\"paper outline\\\", \\\"plan the paper\\\", \\\"\u8bba\u6587\u89c4\u5212\\\", or wants to create a paper plan before writing."
+description: "Create a structured manuscript outline from research claims, evidence, and review conclusions. Use for a paper plan or outline before drafting sections."
 ---
 
 # Paper Plan: From Review Conclusions to Paper Outline
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

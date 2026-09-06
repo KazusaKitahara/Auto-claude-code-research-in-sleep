@@ -1,11 +1,30 @@
 ---
 name: "idea-discovery"
-description: "Workflow 1: Full idea discovery pipeline. Orchestrates research-lit \u2192 idea-creator \u2192 novelty-check \u2192 research-review to go from a broad research direction to validated, pilot-tested ideas. Use when user says \\\"\u627eidea\u5168\u6d41\u7a0b\\\", \\\"idea discovery pipeline\\\", \\\"\u4ece\u96f6\u5f00\u59cb\u627e\u65b9\u5411\\\", or wants the complete idea exploration workflow."
+description: "Run the complete research idea-discovery workflow: literature, candidate generation, novelty checks, and authorized pilot validation. Use when the user requests the full discovery pipeline. Uses the configured Gemini review backend."
 ---
 
 > Override for Codex users who want **Gemini**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Workflow 1: Idea Discovery Pipeline
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -246,9 +265,9 @@ Finalize `idea-stage/IDEA_REPORT.md` with all accumulated information:
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](#shared-references) (`shared-references/output-versioning.md`)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](#shared-references) (`shared-references/output-manifest.md`)** — log every output to MANIFEST.md
+> - **[Output Language Protocol](#shared-references) (`shared-references/output-language.md`)** — respect the project's language setting
 
 ## Key Rules
 
@@ -260,7 +279,7 @@ Finalize `idea-stage/IDEA_REPORT.md` with all accumulated information:
 - **Empirical signal > theoretical appeal.** An idea with a positive pilot outranks a "sounds great" idea without evidence.
 - **Document everything.** Dead ends are just as valuable as successes for future reference.
 - **Be honest with the reviewer.** Include negative results and failed pilots in the review prompt.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final report. If absent/off, skip silently.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final report. If absent/off, skip silently.
 
 ## Composing with Workflow 2
 

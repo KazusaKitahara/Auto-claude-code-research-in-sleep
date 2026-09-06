@@ -1,11 +1,13 @@
 ---
 name: paper-illustration
-description: "Generate publication-quality AI illustrations for academic papers using Gemini image generation. Creates architecture diagrams, method illustrations with Claude-supervised iterative refinement loop. Use when user says \"生成图表\", \"画架构图\", \"AI绘图\", \"paper illustration\", \"generate diagram\", or needs visual figures for papers."
+description: "Generate or refine raster academic illustrations with the configured Gemini image route. Use for AI-rendered paper artwork; use figure-spec for editable vector diagrams and paper-figure for measured-data plots."
 argument-hint: "[description-or-method-file] [— style-ref: <source>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply, WebSearch
 ---
 
 # Paper Illustration: Multi-Stage Claude-Supervised Figure Generation
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Generate publication-quality illustrations using a **multi-stage workflow** with **Claude as the STRICT supervisor/reviewer**.
 
@@ -197,7 +199,7 @@ Sources accepted: local TeX dir / file, local PDF, arXiv id, http(s) URL. Overle
 
 **Not for:** Statistical plots (use `/paper-figure`), photo-realistic images
 
-## Workflow: MUST EXECUTE ALL STEPS
+## Workflow
 
 ### Step 0: Pre-flight Check
 
@@ -646,7 +648,7 @@ ELSE IF iteration < MAX_ITERATIONS:
     → Go to Step 2 (Gemini Layout) with refined prompt
 ELSE:
     → Max iterations reached, show best version
-    → Ask user if they want to continue or accept
+    → Deliver the best available draft with the unmet target and unresolved defects; additional rounds require a new limit
 ```
 
 ### Step 7: Generate Improvement Prompt (for refinement)
@@ -696,10 +698,10 @@ When figure is accepted (score ≥ 9):
 \end{figure*}
 ```
 
-## Key Rules (MUST FOLLOW - STRICT)
+## Key Rules
 
 1. **NEVER skip the review step** — Always read and STRICTLY score the image
-2. **NEVER accept score < 9** — Keep refining until excellence
+2. **Respect the quality target and iteration cap** — If the final score remains below 9 at the cap, return the best draft and its unresolved issues; do not claim the target passed or silently add rounds.
 3. **VERIFY EVERY ARROW DIRECTION** — Wrong direction = automatic fail (score ≤ 6)
 4. **VERIFY EVERY BLOCK CONTENT** — Wrong content = automatic fail (score ≤ 7)
 5. **BE SPECIFIC in feedback** — "Arrow from A to B points to wrong target C" not "arrow is wrong"

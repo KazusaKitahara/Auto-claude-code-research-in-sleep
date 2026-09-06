@@ -1,11 +1,13 @@
 ---
 name: claims-drafting
-description: "Draft patent claims for an invention. Use when user says \"撰写权利要求\", \"draft claims\", \"写权利要求书\", \"claim drafting\", or wants to create patent claims. The core skill of the patent pipeline."
+description: "Draft or revise patent claims from an invention disclosure, including independent and dependent claims. Use for a claims section; use patent-pipeline for a complete application."
 argument-hint: "[invention-disclosure-path]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Claims Drafting: The Core Patent Skill
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Draft patent claims based on: **$ARGUMENTS**
 
@@ -15,7 +17,7 @@ This is the most critical skill in the patent pipeline. Claims define the legal 
 
 - `REVIEWER_MODEL = gpt-5.6-sol` — External examiner for claim quality review
 - `MAX_CLAIM_REVISION_ROUNDS = 3` — Maximum revision iterations
-- `CLAIM_STYLE = "auto"` — `US` (Jepson or open), `EP` (two-part mandatory), `CN` (two-part), `auto` (detect from jurisdiction)
+- `CLAIM_STYLE = "auto"` — `US` (Jepson or open), `EP` (two-part where appropriate), `CN` (two-part), `auto` (detect from jurisdiction)
 - `MIN_INDEPENDENT_CLAIMS = 2` — Typically method + system. For utility model (实用新型): apparatus/device only, NO method claims.
 - `MAX_TOTAL_CLAIMS = 20` — Practical limit (USPTO includes 20 in base fee)
 - `PATENT_TYPE = "invention"` — `invention` (发明专利) or `utility_model` (实用新型, apparatus claims only)
@@ -52,7 +54,7 @@ Based on target jurisdiction:
 |-------------|------------|----------------------|-----------------|
 | CN | Two-part (两部式) | 其特征在于 | 一种...的方法/装置，包括： |
 | US | Open (preferred) | comprising | A method for..., comprising: |
-| EP | Two-part (mandatory) | characterised in that | A method for..., comprising [known], characterised in that [inventive] |
+| EP | Two-part where appropriate | characterised in that | A method for..., comprising [known], characterised in that [inventive] |
 | ALL | Draft CN + US + EP | All of the above | All of the above |
 
 ### Step 2: Draft Independent Claims

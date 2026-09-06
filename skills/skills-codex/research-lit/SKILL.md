@@ -1,9 +1,15 @@
 ---
 name: "research-lit"
-description: "Search and analyze research papers, find related work, summarize key ideas. Use when user says \"find papers\", \"related work\", \"literature review\", \"what does this paper say\", or needs to understand academic papers."
+description: "Find, read, and synthesize research literature for a topic, related-work section, or survey. Use for multi-paper discovery and synthesis; use alphaxiv for a quick single-arXiv-paper explanation."
 ---
 
 # Research Literature Review
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Research topic: $ARGUMENTS
 
@@ -170,6 +176,7 @@ fi
 ARXIV_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/arxiv_fetch.py" ] && ARXIV_FETCHER="$ARIS_REPO/tools/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f tools/arxiv_fetch.py ] && ARXIV_FETCHER="tools/arxiv_fetch.py"
+[ -z "$ARXIV_FETCHER" ] && [ -f "$HOME/.agents/skills/arxiv/arxiv_fetch.py" ] && ARXIV_FETCHER="$HOME/.agents/skills/arxiv/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f ~/.codex/skills/arxiv/arxiv_fetch.py ] && ARXIV_FETCHER="$HOME/.codex/skills/arxiv/arxiv_fetch.py"
 
 if [ -n "$ARXIV_FETCHER" ]; then
@@ -200,6 +207,7 @@ fi
 S2_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/semantic_scholar_fetch.py" ] && S2_FETCHER="$ARIS_REPO/tools/semantic_scholar_fetch.py"
 [ -z "$S2_FETCHER" ] && [ -f tools/semantic_scholar_fetch.py ] && S2_FETCHER="tools/semantic_scholar_fetch.py"
+[ -z "$S2_FETCHER" ] && [ -f "$HOME/.agents/skills/semantic-scholar/semantic_scholar_fetch.py" ] && S2_FETCHER="$HOME/.agents/skills/semantic-scholar/semantic_scholar_fetch.py"
 [ -z "$S2_FETCHER" ] && [ -f ~/.codex/skills/semantic-scholar/semantic_scholar_fetch.py ] && S2_FETCHER="$HOME/.codex/skills/semantic-scholar/semantic_scholar_fetch.py"
 
 if [ -n "$S2_FETCHER" ]; then
@@ -232,6 +240,7 @@ fi
 DEEPXIV_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/deepxiv_fetch.py" ] && DEEPXIV_FETCHER="$ARIS_REPO/tools/deepxiv_fetch.py"
 [ -z "$DEEPXIV_FETCHER" ] && [ -f tools/deepxiv_fetch.py ] && DEEPXIV_FETCHER="tools/deepxiv_fetch.py"
+[ -z "$DEEPXIV_FETCHER" ] && [ -f "$HOME/.agents/skills/deepxiv/deepxiv_fetch.py" ] && DEEPXIV_FETCHER="$HOME/.agents/skills/deepxiv/deepxiv_fetch.py"
 [ -z "$DEEPXIV_FETCHER" ] && [ -f ~/.codex/skills/deepxiv/deepxiv_fetch.py ] && DEEPXIV_FETCHER="$HOME/.codex/skills/deepxiv/deepxiv_fetch.py"
 
 if [ -n "$DEEPXIV_FETCHER" ]; then
@@ -273,6 +282,7 @@ fi
 EXA_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/exa_search.py" ] && EXA_FETCHER="$ARIS_REPO/tools/exa_search.py"
 [ -z "$EXA_FETCHER" ] && [ -f tools/exa_search.py ] && EXA_FETCHER="tools/exa_search.py"
+[ -z "$EXA_FETCHER" ] && [ -f "$HOME/.agents/skills/exa-search/exa_search.py" ] && EXA_FETCHER="$HOME/.agents/skills/exa-search/exa_search.py"
 [ -z "$EXA_FETCHER" ] && [ -f ~/.codex/skills/exa-search/exa_search.py ] && EXA_FETCHER="$HOME/.codex/skills/exa-search/exa_search.py"
 
 if [ -n "$EXA_FETCHER" ]; then
@@ -357,6 +367,7 @@ fi
 OPENALEX_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/openalex_fetch.py" ] && OPENALEX_FETCHER="$ARIS_REPO/tools/openalex_fetch.py"
 [ -z "$OPENALEX_FETCHER" ] && [ -f tools/openalex_fetch.py ] && OPENALEX_FETCHER="tools/openalex_fetch.py"
+[ -z "$OPENALEX_FETCHER" ] && [ -f "$HOME/.agents/skills/openalex/openalex_fetch.py" ] && OPENALEX_FETCHER="$HOME/.agents/skills/openalex/openalex_fetch.py"
 [ -z "$OPENALEX_FETCHER" ] && [ -f ~/.codex/skills/openalex/openalex_fetch.py ] && OPENALEX_FETCHER="$HOME/.codex/skills/openalex/openalex_fetch.py"
 
 # Skip OpenAlex when the helper or its optional dependency is unavailable.
@@ -394,6 +405,7 @@ fi
 ARXIV_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/arxiv_fetch.py" ] && ARXIV_FETCHER="$ARIS_REPO/tools/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f tools/arxiv_fetch.py ] && ARXIV_FETCHER="tools/arxiv_fetch.py"
+[ -z "$ARXIV_FETCHER" ] && [ -f "$HOME/.agents/skills/arxiv/arxiv_fetch.py" ] && ARXIV_FETCHER="$HOME/.agents/skills/arxiv/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f ~/.codex/skills/arxiv/arxiv_fetch.py ] && ARXIV_FETCHER="$HOME/.codex/skills/arxiv/arxiv_fetch.py"
 
 # Download top N most relevant arXiv papers; skip silently if helper unresolved.

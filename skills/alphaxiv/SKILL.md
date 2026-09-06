@@ -1,6 +1,6 @@
 ---
 name: alphaxiv
-description: Quick single-paper lookup via AlphaXiv LLM-optimized summaries with tiered source fallback. Use when user says "explain this paper", "summarize paper", pastes an arXiv/AlphaXiv URL, or provides a bare arXiv ID for quick understanding - not for broad literature search.
+description: "Explain or summarize one arXiv paper or AlphaXiv page using layered source retrieval. Use for a paper URL or identifier and a single-paper reading task; use research-lit for a literature survey."
 argument-hint: "[arxiv-id-or-url]"
 allowed-tools: Bash(*), Read, Write, Glob
 ---

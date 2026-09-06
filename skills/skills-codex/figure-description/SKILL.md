@@ -1,6 +1,6 @@
 ---
 name: figure-description
-description: Process user-provided patent figures and generate formal drawing descriptions. Use when user says "附图处理", "figure description", "附图说明", "drawings description", or wants to describe patent figures with reference numerals.
+description: "Write patent drawing descriptions from supplied figures and reference numerals. Use for patent figure descriptions or an application drawings section."
 metadata:
   argument-hint: '[figure-directory-or-figure-list]'
 ---

@@ -1,6 +1,6 @@
 ---
 name: arxiv
-description: Search, download, and summarize academic papers from arXiv. Use when user says "search arxiv", "download paper", "fetch arxiv", "arxiv search", "get paper pdf", or wants to find and save papers from arXiv to the local paper library.
+description: "Search arXiv, retrieve paper metadata, and download requested preprints to a local library. Use when arXiv is the requested source or a supplied arXiv paper must be retrieved."
 argument-hint: "[query-or-arxiv-id]"
 allowed-tools: Bash(*), Read, Write
 ---

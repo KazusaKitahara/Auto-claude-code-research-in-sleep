@@ -1,9 +1,11 @@
 ---
 name: research-pipeline
-description: "Full end-to-end research pipeline: from a broad research direction through idea discovery, experiments, and review all the way to a polished paper PDF. Use when user says \"全流程\", \"full pipeline\", \"从找idea到投稿\", \"end-to-end research\", or wants the complete autonomous research lifecycle."
+description: "Run the complete research workflow from a broad direction through discovery, authorized experiments, iterative review, and a paper PDF. Use when the user requests the full research lifecycle."
 ---
 
 # Full Research Pipeline: Idea → Experiments → Submission
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > **External cadence is fire-control only.** An overnight scheduler may check
 > process/file progress, update a heartbeat, and nudge a stalled phase. It must

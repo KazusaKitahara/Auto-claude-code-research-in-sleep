@@ -1,11 +1,13 @@
 ---
 name: research-lit
-description: Search and analyze research papers, find related work, summarize key ideas. Use when user says "find papers", "related work", "literature review", "what does this paper say", or needs to understand academic papers.
+description: "Find, read, and synthesize research literature for a topic, related-work section, or survey. Use for multi-paper discovery and synthesis; use alphaxiv for a quick single-arXiv-paper explanation."
 argument-hint: "[paper-topic-or-url]"
 allowed-tools: Bash(*), Read, Glob, Grep, WebSearch, WebFetch, Write, Agent, mcp__zotero__*, mcp__obsidian-vault__*
 ---
 
 # Research Literature Review
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Research topic: $ARGUMENTS
 

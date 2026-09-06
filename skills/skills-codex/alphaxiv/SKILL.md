@@ -1,11 +1,15 @@
 ---
 name: alphaxiv
-description: Quick single-paper lookup via AlphaXiv LLM-optimized summaries with tiered source fallback. Use when user says "explain this paper", "summarize paper", pastes an arXiv/AlphaXiv URL, or provides a bare arXiv ID for quick understanding - not for broad literature search.
+description: "Explain or summarize one arXiv paper or AlphaXiv page using layered source retrieval. Use for a paper URL or identifier and a single-paper reading task; use research-lit for a literature survey."
 metadata:
   argument-hint: '[arxiv-id-or-url]'
 ---
 
 # AlphaXiv Paper Lookup
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Lookup paper: $ARGUMENTS
 
@@ -137,6 +141,7 @@ if [ -d research-wiki/ ]; then
   WIKI_SCRIPT=""
   [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
   [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+  [ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
   [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
   [ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" ingest_paper research-wiki/ \
       --arxiv-id "<paper_arxiv_id>" \

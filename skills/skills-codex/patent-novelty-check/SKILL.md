@@ -1,6 +1,6 @@
 ---
 name: patent-novelty-check
-description: Assess patent novelty and non-obviousness against prior art. Use when user says "专利查新", "patent novelty", "可专利性评估", "patentability check", or wants to evaluate if an invention is patentable.
+description: "Compare an invention against prior art for potential patent novelty and non-obviousness issues. Use for patentability research, with jurisdiction and evidence limits stated."
 metadata:
   argument-hint: '[invention-description-or-brief-path]'
 ---
@@ -153,4 +153,4 @@ Write `patent/NOVELTY_ASSESSMENT.md`:
 - Obviousness requires BOTH: (1) a combination of references AND (2) a motivation to combine them.
 - Never assume the invention is patentable just because no identical patent exists.
 - The assessment is advisory only -- actual prosecution may reveal different prior art.
-- If reviewer delegation is unavailable in the current Codex host, stop and ask the user to enable Codex agent support before continuing.
+- If the requested reviewer is unavailable, mark that review pending/unavailable and finish independent drafting or evidence preparation. Do not claim examiner acceptance or silently substitute a local PASS.

@@ -2,10 +2,12 @@
 
 ## Language Detection
 
-Determine the output language using this priority:
-1. Check `AGENTS.md` for a `language:` field in `## Pipeline Status` — if `language: zh` or `language: cn`, output in Chinese
-2. If the user's most recent message is in Chinese, output in Chinese
-3. Default: English
+Determine human-readable output language using this priority:
+1. The user's explicit language request, including established session preferences.
+2. A relevant project language setting (for example `language: zh` in the project status).
+3. The current conversation language; otherwise English.
+
+Use a venue's required submission language for the filing artifact when producing that requested artifact. Keep commentary and review reports in the user's requested language. If a requested translation is not suitable for filing, deliver the translation and label that limitation instead of silently changing its language.
 
 ## What to Localize
 
@@ -19,7 +21,7 @@ Determine the output language using this priority:
 - Code, shell commands, file paths, directory names
 - Paper titles, author names, venue names, BibTeX entries
 - Technical terms with no standard Chinese translation (keep English, optionally annotate: "attention mechanism (注意力机制)")
-- LaTeX content — paper-writing workflow always outputs English for venue submission
+- LaTeX commands and labels remain unchanged; translate prose according to the requested document language.
 - JSON state files — keys and structure remain English
 - **Machine-parsed markers** — never localize the following, regardless of language setting:
   - Markdown frontmatter keys (e.g., `outcome:`, `node_id:`, `title:`, `type:`)
@@ -41,5 +43,5 @@ Determine the output language using this priority:
 | /research-refine-pipeline | Full | PIPELINE_SUMMARY.md follows setting |
 | /research-pipeline | Full | Inherits from sub-skills |
 | /result-to-claim | Full | Claim descriptions follow setting |
-| /paper-writing | Skip | Always English LaTeX for submission |
-| /paper-write | Skip | Always English LaTeX |
+| /paper-writing | Full | Use the requested draft language or verified venue submission language |
+| /paper-write | Full | Preserve commands while writing prose in the requested language |

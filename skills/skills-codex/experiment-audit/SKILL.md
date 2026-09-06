@@ -1,11 +1,13 @@
 ---
 name: experiment-audit
-description: Audit experiment integrity before claiming results. Uses fresh-agent Codex review (same-family provisional in the base Codex mirror) to check for fake ground truth, score normalization fraud, phantom results, and insufficient scope. Use when user says "审计实验", "check experiment integrity", "audit results", "实验诚实度", or after experiments complete before writing claims.
+description: "Audit ML experiment integrity against code, raw results, ground truth, and claimed scope. Use for an experiment-integrity audit or a required research evidence gate; report findings without launching fixes or new runs. Base Codex semantic review is same-family provisional."
 metadata:
   argument-hint: '[experiment-dir-or-results-path]'
 ---
 
 # Experiment Audit: Fresh-Agent Integrity Verification
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

@@ -1,11 +1,17 @@
 ---
 name: integrity-forensics
-description: 'Run the Anti-Autoresearch integrity-forensics DETERMINISTIC slice (numeric core + rules-only reporter) against a paper via a SHA-pinned thin launcher, then convert the verdict into a typed policy gate (BLOCK/WARN/NO_NEW_BLOCKER) and an append-only obligations ledger. Codex-native limitation: upstream ships no Codex-native auditor pack, so the full nine-dimension semantic sweep requires a Claude Code session — this pack runs the honestly-scoped deterministic-only mode (it can flag, it can never say CLEAN). Use when user says "integrity forensics", "forensic audit this paper", "投稿前自查诚信".'
+description: "Run the deterministic Anti-Autoresearch forensic slice and its typed integrity gate. Use for paper-integrity checks; this Codex package does not run the full semantic auditor pack and cannot certify CLEAN."
 metadata:
   argument-hint: '[paper-dir | pdf | arxiv-id]'
 ---
 
 # Integrity Forensics — thin launcher (Codex-native: deterministic slice)
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Audit target: **$ARGUMENTS**
 

@@ -1,11 +1,17 @@
 ---
 name: paper-poster-html
-description: DEFAULT poster pipeline — build an academic conference poster (ICML/NeurIPS/ICLR/CVPR/...) as a single HTML/CSS file with measurement-driven hard gates, real paper figures, a two-hue design-token system, and print-ready PDF via headless Chromium. Use when the user says "做海报", "poster", "conference poster", "paper poster", or asks to design/redo a research poster.
+description: "Create or revise an academic conference poster in HTML/CSS with real paper figures, layout checks, and print-ready PDF export. Use for research posters when this format fits the request."
 metadata:
   argument-hint: '[paper-dir-or-pdf] [— venue: ICLR, canvas: 185x90cm landscape, venue-colors: true]'
 ---
 
 # Paper Poster (HTML): measurement-gated poster generation
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -113,11 +119,11 @@ paper (.tex / PDF) ──► content plan + claim→evidence audit (fresh review
    `POSTER_STATE.json` — specs change yearly; never reuse a cached spec silently.
 
 **🚦 Checkpoint**: echo the venue spec table (canvas, orientation, source URL) and the
-chosen template. Wait.
+chosen template. Continue with `AUTO_PROCEED=true`; otherwise wait for the user’s checkpoint decision.
 
 ### Phase 0.5 — Design discovery (one question batch)
 
-Ask the user once, ≤4 questions: layout template (from `templates/README.md`), palette
+Reuse known preferences; infer routine design choices when unspecified. Ask only for missing facts that materially affect the poster: layout template (from `templates/README.md`), palette
 (default generic pack / venue pack / custom within constraints), logos + venue mark
 (paths or "none" — never fabricate; check the venue's logo policy), QR target (paper /
 code / project page / none — generate **offline** with `qrencode` or python-`qrcode`;
@@ -166,7 +172,7 @@ never reverted.
    ```
 3. Fix every non-OK row or record it as a user-acknowledged tradeoff.
 
-**🚦 Checkpoint**: content plan + audit summary. Wait.
+**🚦 Checkpoint**: show the content plan and audit summary. Continue when `AUTO_PROCEED=true`; wait only for a requested interactive checkpoint or unresolved content decision.
 
 ### Phase 2 — Real paper figures (provenance-gated)
 
@@ -174,7 +180,7 @@ Source preference chain:
 1. Paper source `figures/` (vector SVG/PDF → convert to SVG via
    `inkscape`/`pdf2svg` if available, else rasterize ≥ 2× rendered px).
 2. PDF-only: `extract_pdf_figures.py contact-sheet` + `auto` to list candidate
-   regions → pick crops (**🚦 human confirms crop choices**) → `crop` at 300–450 DPI.
+   regions → pick crops (preview material crop choices; require a decision only if scientific content would be lost or the user requested a checkpoint) → `crop` at 300–450 DPI.
 3. Last resort: user supplies explicit `page,x0,y0,x1,y1` bboxes.
 
 Then `preprocess_figures.py --autocrop` every asset. Every paper-derived image gets a

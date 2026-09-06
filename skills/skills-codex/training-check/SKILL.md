@@ -1,17 +1,25 @@
 ---
 name: training-check
-description: Interactively monitor training metrics from the current Codex session, periodically checking WandB or fallback logs for NaN, divergence, plateaus, and broken runs.
+description: "Monitor identified training runs over a bounded interval for NaNs, divergence, stalls, or plateaus using W&B or logs. Use when ongoing training checks are requested; use monitor-experiment for one status snapshot."
 metadata:
   argument-hint: '[wandb-run-or-monitoring-brief]'
 ---
 
 # Training Check
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 You are now in **interactive watch** / 交互式训练监控模式.
 
 Keep the current session open and report directly in the current terminal. The user is watching this terminal for updates. By default, run a training health check every 30 minutes, output a concise but complete analysis report after each check, state the next check time, then continue monitoring.
 
 This skill checks training **quality**, not basic process health. Process health checks such as whether a tmux session exists or whether the GPU is idle can be handled by watchdog-style tooling; this skill focuses on whether the run is still worth continuing.
+
+## Monitoring authority and duration
+
+Monitoring alone does not authorize stopping or restarting a training job. `AUTO_STOP` is true only when the user has delegated intervention for the named run and its stop criteria; otherwise `STOP` is a recommendation and the job keeps running. A supplied stop command is an implementation detail, not authorization. Never kill unrelated sessions or delete checkpoints.
+
+Use the requested monitoring duration or check count. If neither is supplied, perform the initial check and one follow-up, then report the state and end monitoring. Use a cancellable host scheduler/wait capability for long intervals; do not claim a background monitor remains active after the session ends. Stop monitoring when the identified run finishes, the limit is reached, or the user cancels.
 
 ## Inputs To Establish First
 
@@ -58,11 +66,11 @@ Use the decisions as follows:
 |----------|---------|--------|
 | `CONTINUE` | Run looks healthy enough to keep training. | Keep monitoring and check again in 30 minutes. |
 | `WAIT` | Evidence is inconclusive, noisy, too early, or temporarily unreachable. | Do not stop training; keep monitoring and check again later. |
-| `STOP` | Training is clearly problematic or no longer worth continuing. | Stop the training task, save evidence, write notes, output final summary, and end monitoring. |
+| `STOP` | Training meets the configured stop criteria. | Stop only if `AUTO_STOP` is authorized; otherwise report the recommendation. Save evidence and finish this check. |
 
 ## Stop Behavior
 
-When the decision is `STOP`:
+When the decision is `STOP` and `AUTO_STOP` is authorized:
 
 - Stop the training task.
 - If the context contains `stop_command`, run `stop_command` first.

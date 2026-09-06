@@ -1,9 +1,11 @@
 ---
 name: "auto-review-loop"
-description: "Autonomous multi-round research review loop. Repeatedly reviews using a secondary Codex agent, implements fixes, and re-reviews until positive assessment or max rounds reached. Use when user says \"auto review loop\", \"review until it passes\", or wants autonomous iterative improvement."
+description: "Run a bounded research review and implementation loop when the user requests autonomous iterative improvement or review-until-ready. Use research-review for a review without implementation. Base Codex semantic review is same-family provisional."
 ---
 
 # Auto Review Loop: Autonomous Research Improvement
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -16,6 +18,10 @@ Reviewer calls follow [the current routing contract](../shared-references/review
 Autonomously iterate: review → implement fixes → re-review, until the external reviewer gives a positive assessment or MAX_ROUNDS is reached.
 
 ## Context: $ARGUMENTS
+
+## Loop boundaries
+
+Resolve the requested target, permitted edits, and concrete round/time/compute limits before starting. Reuse prior authorization for in-scope fixes. A review-only request ends with findings; an iterative repair request runs the loop. Stop on completion, cancellation, the first limit, or no material progress in two successive rounds, and report remaining issues. A reviewer error is not permission to switch providers, rerun a possibly dispatched paid call, or count a missing review as a pass.
 
 ## Constants
 
@@ -104,7 +110,7 @@ In addition to the overwritable state file, maintain an **append-only** acquitta
      - **Generate `run_id`**: `run_<YYYYMMDD>_<8-char-hex>` (e.g., `run_20260713_a1b2c3d4`). This run_id persists across all round writes and binds acquittal receipts to this invocation.
    - If it exists AND `status` is `"completed"`: **fresh start** (previous loop finished normally — but its `ACQUITTAL_LOG.jsonl` entries are retained as an audit trail with their own `run_id`, and are NOT valid for the current run's stop gate)
      - **Generate a new `run_id`** for this invocation.
-   - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **fresh start** (stale state from a killed/abandoned run — delete the file and start over)
+   - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **inspect before resuming** (stale state may still refer to live jobs; preserve it, check the target and pending jobs, and resume only if this invocation requests that work)
      - **Generate a new `run_id`** for this invocation.
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is within 24 hours: **resume**
      - Read the state file to recover `run_id`, `round`, `agent_id`, `last_score`, `pending_experiments`
@@ -302,9 +308,9 @@ Wait for the user's response. Parse their input:
 - **Skip specific fixes** ("skip 1,3"): remove those fixes from the action list
 - **Stop** ("stop", "enough", "done"): terminate the loop, jump to Termination
 
-#### Feishu Notification (if configured)
+#### Feishu Notification (when authorized and configured)
 
-After parsing the score, check if `~/.codex/feishu.json` exists and mode is not `"off"`:
+After parsing the score, when notifications are authorized, check if `~/.codex/feishu.json` exists and mode is not `"off"`:
 - Send a `review_scored` notification: "Round N: X/10 — [verdict]" with top 3 weaknesses
 - If **interactive** mode and verdict is "almost": send as checkpoint, wait for user reply on whether to continue or stop
 - If config absent or mode off: skip entirely (no-op)

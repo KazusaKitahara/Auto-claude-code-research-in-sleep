@@ -1,11 +1,17 @@
 ---
 name: figure-spec
-description: Generate deterministic publication-quality architecture, workflow, and pipeline diagrams from structured JSON (FigureSpec) into editable SVG. Use when user says "架构图", "workflow 图", "pipeline 图", "确定性矢量图", "figure spec", "draw architecture", or needs precise, editable, publication-ready vector diagrams. Preferred over AI illustration for formal architecture/workflow figures.
+description: "Create precise, editable SVG architecture, workflow, and pipeline diagrams from structured FigureSpec JSON. Use for deterministic vector figures; honor a requested visual medium or existing diagram system."
 metadata:
   argument-hint: '[description-of-diagram]'
 ---
 
 # FigureSpec: Deterministic JSON → SVG Figure Generation
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -64,7 +70,9 @@ fi
 [ -z "$FIGURE_RENDERER" ] && [ -f tools/figure_renderer.py ] && FIGURE_RENDERER="tools/figure_renderer.py"
 
 # Layer 4: Codex-side skill-local install (`install_aris_codex.sh` may place it here).
+[ -z "$FIGURE_RENDERER" ] && [ -f "$HOME/.agents/skills/figure-spec/scripts/figure_renderer.py" ] && FIGURE_RENDERER="$HOME/.agents/skills/figure-spec/scripts/figure_renderer.py"
 [ -z "$FIGURE_RENDERER" ] && [ -f ~/.codex/skills/figure-spec/scripts/figure_renderer.py ] && FIGURE_RENDERER="$HOME/.codex/skills/figure-spec/scripts/figure_renderer.py"
+[ -z "$FIGURE_RENDERER" ] && [ -f "$HOME/.agents/skills/figure-spec/figure_renderer.py" ] && FIGURE_RENDERER="$HOME/.agents/skills/figure-spec/figure_renderer.py"  # pre-Phase-3.1 layout
 [ -z "$FIGURE_RENDERER" ] && [ -f ~/.codex/skills/figure-spec/figure_renderer.py ] && FIGURE_RENDERER="$HOME/.codex/skills/figure-spec/figure_renderer.py"  # pre-Phase-3.1 layout
 
 [ -n "$FIGURE_RENDERER" ] || {
@@ -180,7 +188,7 @@ spawn_agent:
     Score each axis 1-10 and list specific issues to fix.
 ```
 
-Iterate until all three axes ≥ 7/10. The ARIS tech report figures went through 5 rounds of this loop to reach C:7/R:7/S:8.
+Use at most three review/revision rounds unless the user supplies another limit. Stop earlier when the requested figure is correct and readable, or when another round would repeat unchanged feedback. Record any unresolved visual defect; numeric scores are advisory.
 
 ## Schema Quick Reference
 

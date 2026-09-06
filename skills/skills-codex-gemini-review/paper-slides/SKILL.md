@@ -1,8 +1,6 @@
 ---
 name: paper-slides
-description: Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper,
-  with speaker notes and full talk script. Use when user says "做PPT", "做幻灯片", "make slides", "conference talk",
-  "presentation slides", "生成slides", "写演讲稿", or wants beamer slides for a conference talk.
+description: "Create an academic paper presentation with Beamer/PDF and editable PPTX, plus requested speaker notes or script. Use for a research slide deck; use paper-talk for the complete talk workflow. Uses the configured Gemini review backend."
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__gemini-review__review, mcp__gemini-review__review_start,
   mcp__gemini-review__review_reply_start, mcp__gemini-review__review_status
 metadata:
@@ -12,6 +10,25 @@ metadata:
 > Override for Codex users who want **Gemini**, not a Codex-MCP reviewer, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Paper Slides: From Paper to Conference Talk
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -33,7 +50,7 @@ Unlike posters (single page, visual-first), slides tell a **temporal story**: ea
 - **PAPER_DIR = `paper/`** — Directory containing the compiled paper.
 - **OUTPUT_DIR = `slides/`** — Output directory for all slide files.
 - **REVIEWER_MODEL = `gemini-review`** — Gemini reviewer invoked through the local `gemini-review` MCP bridge for slide review.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**.
+- **AUTO_PROCEED = true** — Continue the requested drafting phases. Set `false` for user-requested interactive checkpoints; unresolved scientific choices, new commitments, and filing/submission authority still require the relevant decision.
 - **COMPILER = `latexmk`** — LaTeX build tool.
 - **ENGINE = `pdflatex`** — LaTeX engine. Use `xelatex` for CJK text.
 
@@ -551,9 +568,9 @@ Next steps:
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](#shared-references) (`shared-references/output-versioning.md`)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](#shared-references) (`shared-references/output-manifest.md`)** — log every output to MANIFEST.md
+> - **[Output Language Protocol](#shared-references) (`shared-references/output-language.md`)** — respect the project's language setting
 
 ## Key Rules
 
@@ -567,7 +584,7 @@ Next steps:
 - **Do NOT hallucinate citations.** Reference only papers cited in the paper.
 - **Opening hook matters**: Never start with "In this paper, we..." — start with the problem or a provocative question.
 - **Font size minimums**: Title ≥28pt, body ≥20pt, footnotes ≥14pt.
-- **Feishu notifications are optional.** If `~/.claude/feishu.json` exists, send notifications. If absent, skip.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.claude/feishu.json` exists, send notifications. If absent, skip.
 
 ## Parameter Pass-Through
 
@@ -583,4 +600,4 @@ Next steps:
 | `aspect` | 16:9 | Aspect ratio (16:9 / 4:3) |
 | `notes` | true | Generate speaker notes |
 | `engine` | pdflatex | LaTeX engine |
-| `auto proceed` | false | Skip checkpoints |
+| `auto proceed` | true | Continue authorized phases; false enables checkpoints |

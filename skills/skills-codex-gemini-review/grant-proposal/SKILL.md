@@ -1,11 +1,30 @@
 ---
 name: grant-proposal
-description: "Draft a structured grant proposal from research ideas and literature. Supports KAKENHI (Japan), NSF (US), NSFC (China, including 面上/青年/优青/杰青/海外优青/重点), ERC (EU), DFG (Germany), SNSF (Switzerland), ARC (Australia), NWO (Netherlands), and generic formats. Use when user says \"write grant\", \"grant proposal\", \"申請書\", \"write KAKENHI\", \"科研費\", \"基金申请\", \"写基金\", \"NSF proposal\", or wants to turn research ideas into a funding application."
+description: "Draft or revise a research grant proposal using the selected funder and current call requirements, including KAKENHI, NSF, NSFC, ERC, and generic formats. Use for funding-application writing. Uses the configured Gemini review backend."
 ---
 
 > Override for Codex users who want **Gemini**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Grant Proposal: From Research Ideas to Fundable Application
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -41,7 +60,7 @@ Grant proposals argue for **future work** (feasibility + potential), not complet
 - **MAX_REVIEW_ROUNDS = 2** — Maximum external review-revise cycles before finalizing.
 - **OUTPUT_DIR = `grant-proposal/`** — Directory for generated proposal files.
 - **LANGUAGE = `auto`** — Output language. Auto-detected from grant type: KAKENHI→Japanese, NSF→English, NSFC→Chinese, ERC→English, DFG→English (or German), SNSF→English, ARC→English, NWO→English. Override explicitly if needed.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation** before proceeding. Grant proposals require PI-specific judgment at every stage. Set `true` only if user explicitly requests fully autonomous mode.
+- **AUTO_PROCEED = true** — Continue the requested drafting phases. Set `false` for user-requested interactive checkpoints; unresolved scientific choices, new commitments, and filing/submission authority still require the relevant decision.
 
 > 💡 These are defaults. Override by telling the skill, e.g., `/grant-proposal "topic — NSF CAREER, latex output"` or `/grant-proposal "topic — NSFC Youth, language: English"`.
 
@@ -218,7 +237,7 @@ Invoke `/research-lit` to ground the proposal in real literature, then search fo
 Does this accurately capture the positioning? Should I adjust before designing the proposal structure?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true was explicitly set by the user.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options for the user:
 - Reply **"go"** or **"ok"** → proceed to Phase 2 with current positioning
@@ -562,9 +581,9 @@ What would you like to do next?
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](#shared-references) (`shared-references/output-versioning.md`)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](#shared-references) (`shared-references/output-manifest.md`)** — log every output to MANIFEST.md
+> - **[Output Language Protocol](#shared-references) (`shared-references/output-language.md`)** — respect the project's language setting
 
 ## Key Rules
 
@@ -578,7 +597,7 @@ What would you like to do next?
 - **Preliminary data de-risks.** Include any pilot results, existing datasets, or prior publications that demonstrate feasibility.
 - **Reviewer-facing structure.** Bold key sentences. Use numbered lists for clarity. Make the reviewer's job easy.
 - **Cultural norms matter.** KAKENHI expects 社会的意義; NSF expects Broader Impacts; NSFC expects 国际前沿 positioning. Missing these is a red flag for reviewers.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final output. If absent, skip silently.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final output. If absent, skip silently.
 
 ## Parameter Pass-Through
 
@@ -598,7 +617,7 @@ Parameters can be passed inline with `—` separator. They flow to sub-skills wh
 | `sources` | all | Literature sources | → `/research-lit` |
 | `arxiv download` | false | Download arXiv PDFs | → `/research-lit` |
 | `reviewer model` | gemini-review | Gemini reviewer bridge | → reviewer thread |
-| `auto proceed` | false | Skip checkpoints | — |
+| `auto proceed` | true | Continue authorized phases; false enables checkpoints | — |
 
 ## Composing with Other Skills
 

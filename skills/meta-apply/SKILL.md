@@ -1,11 +1,13 @@
 ---
 name: meta-apply
-description: "Privileged applier that LANDS meta-optimize / corpus-audit patches the user approved — the ONLY skill permitted to mutate the skill corpus from a self-modification proposal, with cross-model jury and human approval at landing. Use when the user says \"meta apply\", \"/meta-apply\", \"land the staged patches\", \"应用优化\", after a /meta-optimize run."
+description: "Apply the staged ARIS self-modification patches the user selected, after a fresh landing review and provenance recording. Use for meta-apply or an explicit request to land reviewed staged proposals."
 argument-hint: "[patch-number-or-all]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Meta-Apply: the privileged landing gate for self-modification patches
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 This skill exists to enforce a **privilege boundary**. Producers like
 [`/meta-optimize`](../meta-optimize/SKILL.md) (and, later, `corpus-audit`) are

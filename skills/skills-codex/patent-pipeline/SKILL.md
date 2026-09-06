@@ -1,11 +1,13 @@
 ---
 name: patent-pipeline
-description: Full patent drafting pipeline from invention description to jurisdiction-formatted filing documents. Supports CN (CNIPA), US (USPTO), EP (EPO). Supports invention patents and utility models. Use when user says "写专利", "patent pipeline", "专利申请", "draft patent", "写权利要求书", or wants to draft a complete patent application.
+description: "Draft a complete patent application from an invention through claims, specification, review, and CN/US/EP document formatting. Use for a full application workflow; use claims-drafting for claims alone."
 metadata:
   argument-hint: '[invention-description — jurisdiction]'
 ---
 
 # Patent Pipeline: From Invention to Filing
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Draft a complete patent application based on: **$ARGUMENTS**
 
@@ -160,7 +162,7 @@ Prior art search complete:
 Ready to proceed with invention structuring?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options:
 - Reply **"go"** -> proceed to Phase 2
@@ -204,7 +206,7 @@ Invention structured:
 The claims define the legal scope of protection. Please review before proceeding to specification.
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options:
 - Reply **"go"** -> proceed to Phase 3
@@ -320,7 +322,7 @@ This compiles the application into the target jurisdiction format(s).
 - Utility model (实用新型) applies ONLY to CN jurisdiction and ONLY covers apparatus/device claims.
 - AUTO_PROCEED defaults to false -- patent applications require human review at every phase. Sub-skills inherit this flag: when AUTO_PROCEED=false, sub-skills present results and wait at their own internal checkpoints too.
 - The patent pipeline produces drafts for attorney review, not final filing documents.
-- Large file handling: if a Write operation fails, retry with Bash `cat <<'EOF'` heredoc.
+- Large file handling: if a write fails, distinguish a size/tool limitation from a permission denial. Use an available permitted file-writing mechanism for the former; do not bypass the latter.
 - Never include experimental results or empirical evaluations in the specification.
 - Consistent terminology is mandatory -- same word for the same concept throughout.
 - If a downstream reviewer step is requested but reviewer delegation is unavailable in the current Codex host, stop and ask the user to enable Codex agent support before continuing.

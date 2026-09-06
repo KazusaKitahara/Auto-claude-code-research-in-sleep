@@ -1,6 +1,6 @@
 ---
 name: gemini-search
-description: Search research papers via Gemini for broad literature discovery. Use when user says "gemini search", "gemini papers", "search with gemini", or wants AI-powered literature discovery beyond arXiv/Semantic Scholar indexes.
+description: "Find research papers through Gemini-backed search and verify the returned sources. Use when the user selects Gemini for literature discovery or that configured retrieval route is appropriate."
 metadata:
   argument-hint: '[search-query]'
 ---

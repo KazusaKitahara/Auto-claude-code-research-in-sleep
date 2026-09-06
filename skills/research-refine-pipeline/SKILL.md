@@ -1,10 +1,12 @@
 ---
 name: research-refine-pipeline
-description: 'Run an end-to-end workflow that chains `research-refine` and `experiment-plan`. Use when the user wants a one-shot pipeline from vague research direction to focused final proposal plus detailed experiment roadmap, or asks to "串起来", build a pipeline, do it end-to-end, or generate both the method and experiment plan together.'
+description: "Produce both a refined research-method proposal and a detailed experiment roadmap by chaining research-refine and experiment-plan. Use when both planning deliverables are requested together."
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Research Refine Pipeline: End-to-End Method and Experiment Planning
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Refine and concretize: **$ARGUMENTS**
 

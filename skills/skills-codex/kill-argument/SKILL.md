@@ -1,11 +1,13 @@
 ---
 name: kill-argument
-description: 'Two-thread adversarial review: a fresh reviewer constructs the strongest 200-word rejection memo, then a second fresh reviewer defends the paper point-by-point and surfaces still-unresolved critical issues. Use when user says "kill argument", "adversarial review", "hostile review", "rebuttal preparation", "reviewer-2 simulation", or before submitting a theory paper that has already passed standard review rounds.'
+description: "Run an adversarial paper review with separate attack and defense reviewers and unresolved-issue adjudication. Use when the user requests a hostile review, reviewer-2 simulation, or this specific submission stress test."
 metadata:
   argument-hint: '[paper-directory]'
 ---
 
 # Kill Argument Exercise: Adversarial Attack-Defense Review
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

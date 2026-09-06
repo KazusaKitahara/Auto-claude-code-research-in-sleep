@@ -1,11 +1,17 @@
 ---
 name: proof-checker
-description: Rigorous mathematical proof verification and fixing workflow. Reads a LaTeX proof, identifies gaps via fresh-agent Codex the configured Codex reviewer review, fixes each gap with full derivations, re-reviews, and generates an audit report. Base review is same-family provisional. Use when user says "检查证明", "verify proof", "proof check", "审证明", "check this proof", or wants rigorous mathematical verification of a theory paper.
+description: "Verify a mathematical proof against its assumptions with a fresh reviewer and an issue ledger. Use for proof checks or rigorous verification; repair and re-review only when proof fixing is requested. Base Codex semantic review is same-family provisional."
 metadata:
   argument-hint: '[path-to-tex-file or proof-description]'
 ---
 
 # Proof Checker: Rigorous Mathematical Verification & Fixing
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -15,9 +21,15 @@ Reviewer calls follow [the current routing contract](../shared-references/review
 > Deterministic compilation/algebra checks may be accepted; a semantic proof
 > acceptance requires a cross-family overlay. Reviewer failure emits BLOCKED.
 
-Systematically verify a mathematical proof via fresh-agent adversarial review, fix identified gaps, re-review until convergence, and generate a detailed audit report with proof-obligation accounting.
+Systematically verify a mathematical proof via fresh-agent adversarial review, repair identified gaps when requested and re-review within the round limit, and generate a detailed audit report with proof-obligation accounting.
 
 ## Context: $ARGUMENTS
+
+## Verification or repair
+
+Use `MODE=verify` for “check,” “verify,” or review-only requests. Inspect the original proof, run the obligation ledger, first review, counterexample checks, and applicable closure checks, then emit the audit and unresolved findings. Do not edit the proof or enter the repair loop.
+
+Use `MODE=repair` when the user asks to fix/complete the proof, explicitly requests `--deep-fix`, or an authorized caller requests proof repair. Then execute the fix and re-review phases within `MAX_REVIEW_ROUNDS`. Changing a theorem's substantive hypotheses or conclusion must remain within the requested repair scope; otherwise propose the change and preserve the original statement.
 
 ## Constants
 
@@ -195,7 +207,7 @@ h_act = Θ(κ^α)  [as κ→0, uniform in π on compact subsets of Π_K, for fix
 ```
 Flag any statement where limit order is ambiguous or uniformity is unclear.
 
-### Phase 1: First Review (Codex the configured Codex reviewer)
+### Phase 1: First Review (configured Codex reviewer)
 
 Submit the **complete proof content** with the following **mandatory reviewer checklist** in the prompt:
 
@@ -267,7 +279,9 @@ Systematically attempt to construct counterexamples using:
 
 Record all attempts (successful or not) in `PROOF_AUDIT.md`.
 
-### Phase 2: Fix Implementation
+### Phase 2: Fix Implementation (repair mode only)
+
+Skip this phase in verification mode; retain each issue as an audit finding.
 
 For each issue, ordered by severity (FATAL → CRITICAL → MAJOR → MINOR):
 
@@ -311,7 +325,9 @@ Log this choice — it is a scope-changing decision when it alters theorem state
 pdflatex -interaction=nonstopmode <file>.tex 2>&1 | grep -E "Error|Warning|undefined"
 ```
 
-### Phase 3: Re-Review (Codex the configured Codex reviewer)
+### Phase 3: Re-Review (configured Codex reviewer)
+
+Repair mode only. Re-review after relevant proof changes; a repeated unchanged finding ends the loop with that issue unresolved.
 
 Launch a fresh reviewer agent for the next review round. Do not use `send_input` here; proof-checker keeps each round independent. Request the same mandatory checklist.
 
@@ -350,7 +366,9 @@ After fixes, re-run:
 - Counterexample suite on all DOWNSTREAM lemmas of modified results
 - Assumption-delta report: what became stronger/weaker due to fixes?
 
-### Phase 3.9: Unrecoverable Proof Protocol
+### Phase 3.9: Unrecoverable Proof Protocol (after attempted repair)
+
+In verification mode, report “not established by the supplied proof” with the precise gaps; do not claim repair was attempted or impossible.
 
 If acceptance gate is not met after MAX_REVIEW_ROUNDS, output a **Proof Unrecoverable Report**:
 1. Minimal set of blocking FATAL/CRITICAL issues that could not be resolved
@@ -409,6 +427,7 @@ ARIS_REPO="${ARIS_REPO:-$(awk -F'\t' '$1=="repo_root"{print $2; exit}' .aris/ins
 WIKI_SCRIPT=""
 [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+[ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
 ```
 

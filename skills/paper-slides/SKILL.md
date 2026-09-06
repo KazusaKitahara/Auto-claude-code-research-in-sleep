@@ -1,11 +1,13 @@
 ---
 name: paper-slides
-description: "Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper, with speaker notes and full talk script. Use when user says \"做PPT\", \"做幻灯片\", \"make slides\", \"conference talk\", \"presentation slides\", \"生成slides\", \"写演讲稿\", or wants beamer slides for a conference talk."
+description: "Create an academic paper presentation with Beamer/PDF and editable PPTX, plus requested speaker notes or script. Use for a research slide deck; use paper-talk for the complete talk workflow."
 argument-hint: "[paper-directory-or-talk-length] [— style-ref: <source>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Paper Slides: From Paper to Conference Talk
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Generate conference presentation slides from: **$ARGUMENTS**
 
@@ -25,7 +27,7 @@ Unlike posters (single page, visual-first), slides tell a **temporal story**: ea
 - **PAPER_DIR = `paper/`** — Directory containing the compiled paper.
 - **OUTPUT_DIR = `slides/`** — Output directory for all slide files.
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for slide review.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**.
+- **AUTO_PROCEED = true** — Continue the requested drafting phases. Set `false` for user-requested interactive checkpoints; unresolved scientific choices, new commitments, and filing/submission authority still require the relevant decision.
 - **COMPILER = `latexmk`** — LaTeX build tool.
 - **ENGINE = `pdflatex`** — LaTeX engine. Use `xelatex` for CJK text.
 
@@ -616,7 +618,7 @@ needed (re-run `/paper-slides` instead).
 - **Do NOT hallucinate citations.** Reference only papers cited in the paper.
 - **Opening hook matters**: Never start with "In this paper, we..." — start with the problem or a provocative question.
 - **Font size minimums**: Title ≥28pt, body ≥20pt, footnotes ≥14pt.
-- **Feishu notifications are optional.** If `~/.claude/feishu.json` exists, send notifications. If absent, skip.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.claude/feishu.json` exists, send notifications. If absent, skip.
 
 ## Parameter Pass-Through
 
@@ -632,4 +634,4 @@ needed (re-run `/paper-slides` instead).
 | `aspect` | 16:9 | Aspect ratio (16:9 / 4:3) |
 | `notes` | true | Generate speaker notes |
 | `engine` | pdflatex | LaTeX engine |
-| `auto proceed` | false | Skip checkpoints |
+| `auto proceed` | true | Continue authorized phases; false enables checkpoints |

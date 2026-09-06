@@ -1,9 +1,11 @@
 ---
 name: "paper-figure"
-description: "Generate publication-quality figures and tables from experiment results. Use when user says \\\"\u753b\u56fe\\\", \\\"\u4f5c\u56fe\\\", \\\"generate figures\\\", \\\"paper figures\\\", or needs plots for a paper."
+description: "Create publication figures, statistical plots, and tables from experiment results. Use for research data visualization; use figure-spec for structural diagrams."
 ---
 
 # Paper Figure: Publication-Quality Plots from Experiment Data
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

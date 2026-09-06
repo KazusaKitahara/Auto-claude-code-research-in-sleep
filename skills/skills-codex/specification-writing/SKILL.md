@@ -1,11 +1,13 @@
 ---
 name: specification-writing
-description: Write the full patent specification from claims and invention disclosure. Use when user says "撰写说明书", "write specification", "写说明书", "patent description", or wants to draft the complete patent specification.
+description: "Draft a patent specification from claims and an invention disclosure, covering technical field, background, summary, drawings, and embodiments. Use for patent specification writing."
 metadata:
   argument-hint: '[claims-path]'
 ---
 
 # Specification Writing: Section-by-Section Patent Description
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -210,5 +212,5 @@ Summary file: `patent/specification/SPECIFICATION_INDEX.md` with:
 - Reference numerals must be consistent: same component, same numeral, everywhere.
 - Background section describes specific deficiencies, not general "need for improvement."
 - Multiple embodiments strengthen the specification but are not always required.
-- Large file handling: if a Write operation fails, retry with Bash `cat <<'EOF'` heredoc.
-- If reviewer delegation is unavailable in the current Codex host, stop and ask the user to enable Codex agent support before continuing.
+- Large file handling: if a write fails, distinguish a size/tool limitation from a permission denial. Use an available permitted file-writing mechanism for the former; do not bypass the latter.
+- If the requested reviewer is unavailable, mark that review pending/unavailable and finish independent drafting or evidence preparation. Do not claim examiner acceptance or silently substitute a local PASS.

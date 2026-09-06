@@ -1,11 +1,13 @@
 ---
 name: overleaf-sync
-description: "Two-way sync between a local paper directory and an Overleaf project, so ARIS audit/edit workflows stay on the local copy while collaborators edit in the Overleaf web UI. Use when user says \"同步 overleaf\", \"overleaf sync\", \"推送到 overleaf\", \"connect overleaf\", \"Overleaf 桥接\", \"pull overleaf\", \"push overleaf\", or wants to bridge their ARIS paper directory with an Overleaf project."
+description: "Connect or synchronize a local paper directory with an Overleaf project. Use for Overleaf setup, pull, push, or two-way sync while preserving local and collaborator changes."
 argument-hint: "[setup <project-id> | pull | push | status]"
 allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write
 ---
 
 # Overleaf Sync
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Bridge a local paper directory with an Overleaf project so that:
 
@@ -101,7 +103,7 @@ For each diff hunk, decide one of:
 | Numerical / claim change | Sync, then re-run `/paper-claim-audit` |
 | New `\cite{...}` | Sync, then re-run `/citation-audit` |
 | Half-sentence / obvious typo | Flag to user, do NOT auto-sync |
-| New section / restructure | Stop, ask user before syncing |
+| New section / restructure | Check whether the requested sync covers it; ask only for an unresolved content or direction decision |
 
 After deciding per-hunk:
 
@@ -143,7 +145,7 @@ git push
 - `citation-audit: fix 14 metadata entries (madaan2023, lee2024, ...)`
 - `paper-claim-audit: correct sec/5 numbers vs results/run_2026_04_19.json`
 
-**Confirmation gate**: `push` writes to a shared resource. ALWAYS show the user `git diff --stat` (and a representative hunk for prose changes) before running `git push`. Wait for explicit confirmation unless the user said `auto: true` upfront.
+**Push authorization**: inspect and present `git diff --stat` with representative prose changes before pushing. An explicit request to push the identified local changes, or established `auto: true` scope, supplies authorization; do not ask again. If the requested sync direction or content to publish is unresolved, prepare the exact diff and ask for that decision. Never force-push over collaborator changes.
 
 ### `status` — diagnostic
 
@@ -167,7 +169,7 @@ Three-way state assessment:
 | No  | No  | Clean       | Nothing to do |
 | Yes | No  | Overleaf has new edits | Run `pull`, then re-run status |
 | No  | Yes | Local ARIS edits unsynced | Run `push` |
-| Yes | Yes | Diverged — needs merge | Stop, surface to user, do NOT auto-resolve |
+| Yes | Yes | Diverged — needs merge | Preserve both sides and merge unambiguous changes; surface substantive manuscript conflicts |
 
 ## Conflict Resolution
 
@@ -176,7 +178,7 @@ If `git pull --ff-only` fails because of true divergence:
 1. **Do not** run `git pull` (which would auto-merge).
 2. **Do not** run `git reset --hard` or `git push --force` (destructive).
 3. Show the user `git log origin/master ^HEAD` (their Overleaf commits) and `git log HEAD ^origin/master` (local ARIS commits).
-4. Ask the user which side to take per file, or to manually merge in Overleaf and then re-pull.
+4. Resolve unambiguous changes while preserving both authors’ work. Present only substantive content conflicts that require an author decision, with the competing passages.
 
 ## Token Security — Defense in Depth
 

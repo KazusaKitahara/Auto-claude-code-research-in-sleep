@@ -1,9 +1,11 @@
 ---
 name: "run-experiment"
-description: "Deploy and run ML experiments on local or remote GPU servers. Use when user says \"run experiment\", \"deploy to server\", \"\u8dd1\u5b9e\u9a8c\", or needs to launch training jobs."
+description: "Prepare and launch authorized ML experiments on the selected local or remote compute backend, then verify startup and result paths. Use for experiment or training-job execution."
 ---
 
 # Run Experiment
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Deploy and run ML experiment: $ARGUMENTS
 
@@ -176,7 +178,7 @@ Check process is running and GPU is allocated.
 
 ### Step 6: Feishu Notification (if configured)
 
-After deployment is verified, check `~/.codex/feishu.json`:
+After deployment is verified, check `~/.codex/feishu.json` only when the user authorized notifications:
 - Send `experiment_done` notification: which experiments launched, which GPUs, estimated time
 - If config absent or mode `"off"`: skip entirely (no-op)
 
@@ -186,7 +188,7 @@ Only run this after the experiment has completed and results/logs/checkpoints ha
 
 1. Verify the target process has exited.
 2. Copy result files and logs to the configured durable location.
-3. Ask for confirmation unless AGENTS.md explicitly says `auto_destroy: true`.
+3. Use existing explicit cleanup authorization (including the task’s `auto_destroy: true` setting). If destruction is not authorized, report the identified instance and collected results before requesting that decision.
 4. Destroy only the recorded instance id for this run.
 
 If any artifact copy fails, do not destroy the instance.

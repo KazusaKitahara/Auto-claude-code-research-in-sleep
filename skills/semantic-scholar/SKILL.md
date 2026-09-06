@@ -1,6 +1,6 @@
 ---
 name: semantic-scholar
-description: Search published venue papers (IEEE, ACM, Springer, etc.) via Semantic Scholar API. Complements /arxiv (preprints) with citation counts, venue metadata, and TLDR. Use when user says "search semantic scholar", "find IEEE papers", "find journal papers", "venue papers", "citation search", or wants published literature beyond arXiv preprints.
+description: "Search Semantic Scholar for research papers, venue metadata, citations, and available summaries. Use when scholarly retrieval through Semantic Scholar is requested or complements preprint search."
 argument-hint: "query-or-paper-id"
 allowed-tools: Bash(*), Read, Write
 ---

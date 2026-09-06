@@ -1,11 +1,13 @@
 ---
 name: auto-paper-improvement-loop
-description: "Autonomously improve a generated paper via GPT-5.6-Sol xhigh review → implement fixes → recompile, for 2 rounds. Use when user says \"改论文\", \"improve paper\", \"论文润色循环\", \"auto improve\", or wants to iteratively polish a generated paper."
+description: "Run a bounded paper review, revision, and recompilation loop when the user requests iterative or autonomous manuscript improvement. Use paper-write for a scoped edit and research-review for feedback only."
 argument-hint: "[paper-directory] [— style-ref: <source>] [— edit-whitelist <path>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Auto Paper Improvement Loop: Review → Fix → Recompile
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** It
 > already loops internally (review → fix → recompile) with its own round
@@ -25,6 +27,10 @@ Autonomously improve the paper at: **$ARGUMENTS**
 This skill is designed to run **after** Workflow 3 (`/paper-plan` → `/paper-figure` → `/paper-write` → `/paper-compile`). It takes a compiled paper and iteratively improves it through external LLM review.
 
 Unlike `/auto-review-loop` (which iterates on **research** — running experiments, collecting data, rewriting narrative), this skill iterates on **paper writing quality** — fixing theoretical inconsistencies, softening overclaims, adding missing content, and improving presentation.
+
+## Loop boundaries
+
+Resolve the requested target, permitted edits, and concrete round/time/compute limits before starting. Reuse prior authorization for in-scope fixes. A review-only request ends with findings; an iterative repair request runs the loop. Stop on completion, cancellation, the first limit, or no material progress in two successive rounds, and report remaining issues. A reviewer error is not permission to switch providers, rerun a possibly dispatched paid call, or count a missing review as a pass.
 
 ## Constants
 
@@ -646,9 +652,9 @@ Report to user:
 - Final page count
 - Remaining issues (if any)
 
-### Feishu Notification (if configured)
+### Feishu Notification (when authorized and configured)
 
-After each round's review AND at final completion, check `~/.claude/feishu.json`:
+After each round's review AND at final completion, check `~/.claude/feishu.json` only when the user authorized notifications:
 - **After each round**: Send `review_scored` — "Round N: X/10 — [key changes]"
 - **After final round**: Send `pipeline_done` — score progression table + final page count
 - If config absent or mode `"off"`: skip entirely (no-op)

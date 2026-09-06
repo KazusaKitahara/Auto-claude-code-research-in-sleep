@@ -1,11 +1,13 @@
 ---
 name: experiment-queue
-description: SSH job queue for multi-seed/multi-config ML experiments with OOM-aware retry, stale-screen cleanup, and wave-transition race prevention. Use when user says "batch experiments", "队列实验", "run grid", "multi-seed sweep", "auto-chain experiments", or when /run-experiment is insufficient for 10+ jobs that need orchestration.
+description: "Orchestrate authorized batches of ML experiments on SSH GPU servers with dependencies, bounded OOM retries, and persistent queue state. Use for multi-seed or multi-config job execution."
 metadata:
   argument-hint: '[manifest-or-grid-spec]'
 ---
 
 # Experiment Queue
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Orchestrate large batches of ML experiments on SSH remote GPU servers with proper state tracking, OOM retry, stale cleanup, and wave transitions.
 

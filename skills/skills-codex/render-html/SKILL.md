@@ -1,11 +1,17 @@
 ---
 name: render-html
-description: Render an ARIS Markdown / JSON artifact (IDEA_REPORT, AUTO_REVIEW, KILL_ARGUMENT, PAPER_PLAN, research-wiki state, etc.) into a single-file HTML view designed for human reading. Use when the user says "渲染 HTML", "出一份 HTML 报告", "render html", "make this readable", "export to html", or wants a polished web-rendered view of a Markdown artifact.
+description: "Render an ARIS Markdown or JSON research artifact as a readable standalone HTML report. Use for an HTML export or web view of an existing research report."
 metadata:
   argument-hint: <input.md> [--template academic|dashboard] [--out <path>] [--title ...] [--state <state.json>] [--json <sidecar.json>] [--offline] [--review|--no-review]
 ---
 
 # /render-html: Markdown → single-file HTML for human reading
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Markdown is for writers. HTML is for readers.** ARIS workflow nodes write Markdown (canonical, audit-trail-friendly, machine-parseable). `/render-html` turns *selected* artifacts into a polished single-file HTML view for the human who actually has to read them. The Markdown stays the source of truth.
 
@@ -53,6 +59,7 @@ fi
 [ -f ".agents/skills/render-html/scripts/render_html.py" ] && RENDER_HTML=".agents/skills/render-html/scripts/render_html.py"
 [ -z "$RENDER_HTML" ] && [ -f "skills/render-html/scripts/render_html.py" ] && RENDER_HTML="skills/render-html/scripts/render_html.py"
 [ -z "$RENDER_HTML" ] && [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/skills/render-html/scripts/render_html.py" ] && RENDER_HTML="$ARIS_REPO/skills/render-html/scripts/render_html.py"
+[ -z "$RENDER_HTML" ] && [ -f "$HOME/.agents/skills/render-html/scripts/render_html.py" ] && RENDER_HTML="$HOME/.agents/skills/render-html/scripts/render_html.py"
 [ -z "$RENDER_HTML" ] && [ -f ~/.codex/skills/render-html/scripts/render_html.py ] && RENDER_HTML="$HOME/.codex/skills/render-html/scripts/render_html.py"
 [ -z "$RENDER_HTML" ] && {
   echo "ERROR: render_html.py not resolved at .agents/skills/render-html/scripts/, skills/render-html/scripts/, \$ARIS_REPO/skills/render-html/scripts/, or ~/.codex/skills/render-html/scripts/." >&2

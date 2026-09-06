@@ -1,11 +1,13 @@
 ---
 name: resubmit-pipeline
-description: "Workflow 5: orchestrate a text-only resubmit of a polished paper to a different venue under hard constraints (no new experiments, no bib edits, no framework changes, never overwrite prior submissions). Use when user says \"resubmit pipeline\", \"重投流程\", \"port paper to <new venue>\", \"resubmit to <venue>\", \"tighten paper for resubmission\", or has a rejected/withdrawn paper to move to a different top venue under tight time budget."
+description: "Prepare a paper for resubmission to another venue under the user’s stated limits while preserving the previous submission. Use for a complete venue-change workflow, respecting constraints on experiments and references."
 argument-hint: "[paper-base-dir] [— target-venue: <name>] [— review-corpus: <path>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Resubmit Pipeline: Text-Only Microedit Mode
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Compose a polished paper into a new venue under text-only constraints: **$ARGUMENTS**
 

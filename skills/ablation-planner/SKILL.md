@@ -1,13 +1,15 @@
 ---
 name: ablation-planner
-description: "Use when main results pass result-to-claim (claim_supported=yes or partial) and ablation studies are needed for paper submission."
+description: "Design prioritized ablation studies and estimate compute from a research method and its results. Use for ablation planning; implement or run studies only when execution is requested."
 argument-hint: "[method-description-or-claim]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Ablation Planner
 
-Systematically design ablation studies that answer the questions reviewers will ask. Codex leads the design (reviewer perspective), CC reviews feasibility and implements.
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
+Systematically design ablation studies that answer the questions reviewers will ask. Codex leads the design (reviewer perspective), CC reviews feasibility and implements only when execution is requested.
 
 ## Context: $ARGUMENTS
 
@@ -16,6 +18,10 @@ Systematically design ablation studies that answer the questions reviewers will 
 - Main results pass `/result-to-claim` with claim_supported = yes or partial
 - User explicitly requests ablation planning
 - `/auto-review-loop` reviewer identifies missing ablations
+
+## Scope
+
+A planning request ends with the prioritized ablation plan, feasibility assessment, and compute estimate. Step 5 runs only when the user requests implementation/execution or an authorized experiment workflow has delegated it. Available GPUs and a positive claim verdict alone do not authorize new jobs.
 
 ## Workflow
 
@@ -104,7 +110,7 @@ Before running anything, CC checks:
 - Dependencies: which ablations can run in parallel?
 - Cuts: if budget is tight, propose removing lower-priority ablations and ask Codex to confirm
 
-### Step 5: Implement and Run
+### Step 5: Implement and Run (when execution is authorized)
 
 1. Create configs/scripts for each ablation (config-only changes first)
 2. Smoke test each ablation before full run

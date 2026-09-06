@@ -1,11 +1,13 @@
 ---
 name: paper-talk
-description: "End-to-end conference talk pipeline: paper → slide outline → Beamer + PPTX → per-page polish → assurance checks (claim / citation / anonymity) → final export and report. Default-good for academic conference talks (NeurIPS / ICML / ICLR / VALSE / 投稿 talks). Trigger phrases: \"做 talk\", \"做 PPT 全流程\", \"talk pipeline\", \"end-to-end slides\", \"做演讲\", \"conference talk full workflow\". Use when the user wants the complete talk artifact, not just a slide deck."
+description: "Run the complete academic talk workflow from paper and outline through slides, per-page polish, evidence checks, and final exports. Use when the user requests the full conference-talk pipeline."
 argument-hint: "[paper-dir] [— talk_type: oral | spotlight | poster-talk | invited] [— minutes: N] [— assurance: draft | polished | conference-ready] [— reference: <pdf>] [— style: generic | why-rf | <venue>] [— style-ref: <paper-source>] [— effort: lite | balanced | max | beast] [— anonymous]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Skill, mcp__codex__codex
 ---
 
 # Paper Talk: End-to-End Conference Talk Pipeline
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Workflow: from a completed paper to a conference-ready talk artifact —
 slide outline, Beamer source, editable PPTX, speaker notes, full talk
@@ -53,7 +55,7 @@ These are non-negotiable across all phases:
 - **ASPECT_RATIO = `16:9`** — Inherited by `/paper-slides`.
 - **STYLE_PRESET** — `generic` if not passed; `why-rf` and venue presets supported by `/slides-polish`.
 - **REFERENCE_VISUAL** — Required when `assurance ≥ polished`. The Beamer compile of this talk is an acceptable self-reference; an external academic talk PDF is preferred when the user wants visual alignment beyond defaults.
-- **AUTO_PROCEED = false** — Each major phase pauses for user approval. Set `true` only when explicitly requested.
+- **AUTO_PROCEED = true** — Continue the requested drafting phases. Set `false` for user-requested interactive checkpoints; unresolved scientific choices, new commitments, and filing/submission authority still require the relevant decision.
 
 ## Inputs
 
@@ -145,9 +147,7 @@ The outline must contain, per slide:
 - Transition cue.
 - Speaker note seed (1-3 sentences; expanded in Phase 2).
 
-**Checkpoint**: present the outline. Default behavior: pause for user
-approval. Set `AUTO_PROCEED = true` only when the user is explicitly
-running unattended.
+**Checkpoint**: present the outline. With `AUTO_PROCEED=true`, continue the requested deck construction. With `AUTO_PROCEED=false`, wait for the user’s outline decision. Previously approved outlines need no second approval.
 
 ### Phase 2: Build Baseline Deck
 

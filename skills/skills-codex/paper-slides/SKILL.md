@@ -1,11 +1,13 @@
 ---
 name: paper-slides
-description: Generate conference presentation slides (beamer LaTeX → PDF + editable PPTX) from a compiled paper, with speaker notes and full talk script. Use when user says "做PPT", "做幻灯片", "make slides", "conference talk", "presentation slides", "生成slides", "写演讲稿", or wants beamer slides for a conference talk.
+description: "Create an academic paper presentation with Beamer/PDF and editable PPTX, plus requested speaker notes or script. Use for a research slide deck; use paper-talk for the complete talk workflow."
 metadata:
   argument-hint: '[paper-directory-or-talk-length]'
 ---
 
 # Paper Slides: From Paper to Conference Talk
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -555,7 +557,7 @@ Next steps:
 - **Do NOT hallucinate citations.** Reference only papers cited in the paper.
 - **Opening hook matters**: Never start with "In this paper, we..." — start with the problem or a provocative question.
 - **Font size minimums**: Title ≥28pt, body ≥20pt, footnotes ≥14pt.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send notifications. If absent, skip.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.codex/feishu.json` exists, send notifications. If absent, skip.
 
 ## Parameter Pass-Through
 
@@ -571,4 +573,4 @@ Next steps:
 | `aspect` | 16:9 | Aspect ratio (16:9 / 4:3) |
 | `notes` | true | Generate speaker notes |
 | `engine` | pdflatex | LaTeX engine |
-| `auto proceed` | false | Skip checkpoints |
+| `auto proceed` | true | Continue authorized phases; false enables checkpoints |

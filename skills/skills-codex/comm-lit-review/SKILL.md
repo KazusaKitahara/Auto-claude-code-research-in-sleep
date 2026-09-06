@@ -1,6 +1,6 @@
 ---
 name: comm-lit-review
-description: Communications-domain literature review with Claude-style knowledge-base-first retrieval. Use when the task is about communications, wireless, networking, satellite/NTN, Wi-Fi, cellular, transport protocols, congestion control, routing, scheduling, MAC/PHY, rate adaptation, channel estimation, beamforming, or communication-system research and the user wants papers, related work, a survey, or a landscape summary.
+description: "Review communications research literature using a local knowledge base and scholarly retrieval. Use for papers, related work, or surveys in wireless, networking, satellite, transport, or communication systems."
 ---
 
 # Comm Lit Review Claude Single

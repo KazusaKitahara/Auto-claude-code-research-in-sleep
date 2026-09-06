@@ -1,11 +1,17 @@
 ---
 name: research-wiki
-description: Persistent research knowledge base that accumulates papers, ideas, experiments, claims, and their relationships across the entire research lifecycle. Inspired by Karpathy's LLM Wiki pattern. Use when user says "知识库", "research wiki", "add paper", "wiki query", "查知识库", or wants to build/query a persistent field map.
+description: "Build or query a persistent research knowledge base of papers, ideas, experiments, claims, and their relationships. Use for research-wiki operations or an explicitly requested research field map."
 metadata:
   argument-hint: '[subcommand: init|ingest|sync|query|update|lint|stats]'
 ---
 
 # Research Wiki: Persistent Research Knowledge Base
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Subcommand: **$ARGUMENTS**
 
@@ -119,6 +125,7 @@ ARIS_REPO="${ARIS_REPO:-$(awk -F'\t' '$1=="repo_root"{print $2; exit}' .aris/ins
 WIKI_SCRIPT=""
 [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+[ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
 
 # arXiv-known paper
@@ -302,6 +309,7 @@ if research-wiki/ exists:
     WIKI_SCRIPT=""
     [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+    [ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
     for paper in top_relevant_papers (limit 8-12):
         [ -n "$WIKI_SCRIPT" ] && python3 "$WIKI_SCRIPT" ingest_paper research-wiki/ \

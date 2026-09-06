@@ -1,9 +1,11 @@
 ---
 name: "paper-compile"
-description: "Compile LaTeX paper to PDF, fix errors, and verify output. Use when user says \\\"\u7f16\u8bd1\u8bba\u6587\\\", \\\"compile paper\\\", \\\"build PDF\\\", \\\"\u751f\u6210PDF\\\", or wants to compile LaTeX into a submission-ready PDF."
+description: "Compile a LaTeX manuscript to PDF, fix relevant build errors, and inspect the rendered output. Use for paper builds or PDF generation from LaTeX; compilation alone does not establish submission readiness."
 ---
 
 # Paper Compile: LaTeX to Submission-Ready PDF
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Compile the LaTeX paper and fix any issues: **$ARGUMENTS**
 

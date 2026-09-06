@@ -1,9 +1,11 @@
 ---
 name: "dse-loop"
-description: "Autonomous design space exploration loop for computer architecture and EDA. Runs a program, analyzes results, tunes parameters, and iterates until objective is met or timeout. Use when user says \\\"DSE\\\", \\\"design space exploration\\\", \\\"sweep parameters\\\", \\\"optimize\\\", \\\"find best config\\\", or wants iterative parameter tuning."
+description: "Run a bounded design-space exploration over a specified computer-architecture or EDA program, tunable parameters, and measurable objective. Use for iterative parameter search, not generic optimization requests."
 ---
 
 # DSE Loop: Autonomous Design Space Exploration
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Autonomously explore a design space: run → analyze → pick next parameters → repeat, until the objective is met or timeout is reached. Designed for computer architecture and EDA problems.
 

@@ -1,6 +1,6 @@
 ---
 name: invention-structuring
-description: "Structure a raw invention idea into a formal invention disclosure. Use when user says \"构建发明\", \"structure invention\", \"发明构建\", \"invention disclosure\", or wants to formalize a rough idea into a patent-ready structure."
+description: "Turn a rough invention into a structured invention disclosure with technical problems, features, effects, and embodiments. Use before patent claims or application drafting."
 argument-hint: "[invention-description-or-brief-path]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__codex__codex
 ---

@@ -1,11 +1,13 @@
 ---
 name: auto-review-loop-llm
-description: Autonomous research review loop using any OpenAI-compatible LLM API. Configure via llm-chat MCP server or environment variables. Trigger with "auto review loop llm" or "llm review".
+description: "Run a bounded research review and revision loop through a configured OpenAI-compatible LLM endpoint. Use when the user requests iterative improvement with that API reviewer; a single LLM review does not imply a loop."
 argument-hint: "[topic-or-scope]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, Skill
 ---
 
 # Auto Review Loop (Generic LLM): Autonomous Research Improvement
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** Like
 > `/auto-review-loop`, it already loops internally (review → fix → re-review),
@@ -20,6 +22,10 @@ allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, Skill
 Autonomously iterate: review → implement fixes → re-review, until the external reviewer gives a positive assessment or MAX_ROUNDS is reached.
 
 ## Context: $ARGUMENTS
+
+## Loop boundaries
+
+Resolve the requested target, permitted edits, and concrete round/time/compute limits before starting. Reuse prior authorization for in-scope fixes. A review-only request ends with findings; an iterative repair request runs the loop. Stop on completion, cancellation, the first limit, or no material progress in two successive rounds, and report remaining issues. A reviewer error is not permission to switch providers, rerun a possibly dispatched paid call, or count a missing review as a pass.
 
 ## Constants
 
@@ -51,7 +57,7 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-### Supported Providers
+### Endpoint Examples (verify current model availability)
 
 | Provider | LLM_BASE_URL | LLM_MODEL |
 |----------|--------------|-----------|
@@ -72,25 +78,43 @@ Add to `~/.claude/settings.json`:
 mcp__llm-chat__chat:
   prompt: |
     [Review prompt content]
-  model: "deepseek-chat"
+  model: "<resolved LLM_MODEL>"
   system: "You are a senior ML reviewer..."
 ```
 
-**Fallback: curl**
+**Fallback: direct HTTP (when MCP is unavailable before dispatch)**
 
 ```bash
-curl -s "${LLM_BASE_URL}/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${LLM_API_KEY}" \
-  -d '{
-    "model": "${LLM_MODEL}",
-    "messages": [
-      {"role": "system", "content": "You are a senior ML reviewer..."},
-      {"role": "user", "content": "[review prompt]"}
-    ],
-    "max_tokens": 4096
-  }'
+# Write a JSON object with a messages array to .aris/review-request.json using a file-writing tool.
+# These JSON files are local evidence artifacts, not shell templates.
+python3 - <<'PY_REVIEW'
+import json
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+payload = json.loads(Path(".aris/review-request.json").read_text())
+payload["model"] = os.environ["LLM_MODEL"]
+url = os.environ["LLM_BASE_URL"].rstrip("/") + "/chat/completions"
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json",
+                           "Authorization": "Bearer " + os.environ["LLM_API_KEY"]},
+                  method="POST")
+try:
+    with urlopen(request, timeout=120) as response:
+        raw = response.read()
+except Exception:
+    raise SystemExit("Review delivery unconfirmed; inspect state before retrying")
+Path(".aris/review-response.json").write_bytes(raw)
+print("Raw review saved to .aris/review-response.json")
+PY_REVIEW
 ```
+
+## Transport and evidence limits
+
+A remote chat API cannot read local paths. Send the necessary primary artifact contents through the authorized route, with source names, alongside the task; do not substitute only executor-written summaries. Preserve the raw response and actual provider-reported model, and identify the executor/reviewer families. Unknown or same-family semantic review remains provisional and cannot satisfy a required cross-family acceptance gate. Use the relevant acceptance and reviewer-independence contracts.
+
+Use the selected model and only parameters supported by its endpoint. Retry only an explicitly rejected pre-dispatch capability request; do not switch providers or resend after an ambiguous timeout. For a possibly dispatched call, report review unavailable and preserve its state. A missing provider blocks that review, while independent local preparation can continue.
 
 ## State Persistence (Compact Recovery)
 
@@ -143,17 +167,29 @@ mcp__llm-chat__chat:
 
 **If MCP NOT available:**
 ```bash
-curl -s "${LLM_BASE_URL}/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${LLM_API_KEY}" \
-  -d '{
-    "model": "${LLM_MODEL}",
-    "messages": [
-      {"role": "system", "content": "You are a senior ML reviewer (NeurIPS/ICML level)."},
-      {"role": "user", "content": "[Full review prompt]"}
-    ],
-    "max_tokens": 4096
-  }'
+# Write a JSON object with a messages array to .aris/review-request.json using a file-writing tool.
+# These JSON files are local evidence artifacts, not shell templates.
+python3 - <<'PY_REVIEW'
+import json
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+payload = json.loads(Path(".aris/review-request.json").read_text())
+payload["model"] = os.environ["LLM_MODEL"]
+url = os.environ["LLM_BASE_URL"].rstrip("/") + "/chat/completions"
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json",
+                           "Authorization": "Bearer " + os.environ["LLM_API_KEY"]},
+                  method="POST")
+try:
+    with urlopen(request, timeout=120) as response:
+        raw = response.read()
+except Exception:
+    raise SystemExit("Review delivery unconfirmed; inspect state before retrying")
+Path(".aris/review-response.json").write_bytes(raw)
+print("Raw review saved to .aris/review-response.json")
+PY_REVIEW
 ```
 
 #### Phase B: Parse Assessment

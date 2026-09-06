@@ -1,11 +1,15 @@
 ---
 name: semantic-scholar
-description: Search published venue papers (IEEE, ACM, Springer, etc.) via Semantic Scholar API. Complements /arxiv (preprints) with citation counts, venue metadata, and TLDR. Use when user says "search semantic scholar", "find IEEE papers", "find journal papers", "venue papers", "citation search", or wants published literature beyond arXiv preprints.
+description: "Search Semantic Scholar for research papers, venue metadata, citations, and available summaries. Use when scholarly retrieval through Semantic Scholar is requested or complements preprint search."
 metadata:
   argument-hint: query-or-paper-id
 ---
 
 # Semantic Scholar Paper Search
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Search topic or paper ID: $ARGUMENTS
 
@@ -73,6 +77,7 @@ fi
 S2_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/semantic_scholar_fetch.py" ] && S2_FETCHER="$ARIS_REPO/tools/semantic_scholar_fetch.py"
 [ -z "$S2_FETCHER" ] && [ -f tools/semantic_scholar_fetch.py ] && S2_FETCHER="tools/semantic_scholar_fetch.py"
+[ -z "$S2_FETCHER" ] && [ -f "$HOME/.agents/skills/semantic-scholar/semantic_scholar_fetch.py" ] && S2_FETCHER="$HOME/.agents/skills/semantic-scholar/semantic_scholar_fetch.py"
 [ -z "$S2_FETCHER" ] && [ -f ~/.codex/skills/semantic-scholar/semantic_scholar_fetch.py ] && S2_FETCHER="$HOME/.codex/skills/semantic-scholar/semantic_scholar_fetch.py"
 ```
 
@@ -172,6 +177,7 @@ if [ -d research-wiki/ ]:
     WIKI_SCRIPT=""
     [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+    [ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
     for each paper in results:
         if paper.externalIds.ArXiv:

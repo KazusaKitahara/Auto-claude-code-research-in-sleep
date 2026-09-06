@@ -1,14 +1,16 @@
 ---
 name: ablation-planner
-description: Use when main results pass result-to-claim (`claim_supported = yes` or `partial`) and ablation studies are needed for paper submission. A secondary Codex agent designs ablations from a reviewer's perspective; the local executor reviews feasibility and implements.
+description: "Design prioritized ablation studies and estimate compute from a research method and its results. Use for ablation planning; implement or run studies only when execution is requested."
 ---
 
 # Ablation Planner
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
 
-Systematically design ablation studies that answer the questions reviewers will ask. The reviewer agent leads the design; the local executor reviews feasibility and implements.
+Systematically design ablation studies that answer the questions reviewers will ask. The reviewer agent leads the design; the local executor reviews feasibility and implements only when execution is requested.
 
 ## Context: $ARGUMENTS
 
@@ -17,6 +19,10 @@ Systematically design ablation studies that answer the questions reviewers will 
 - Main results pass `/result-to-claim` with `claim_supported = yes` or `partial`
 - The user explicitly requests ablation planning
 - `/auto-review-loop` identifies missing ablations
+
+## Scope
+
+A planning request ends with the prioritized ablation plan, feasibility assessment, and compute estimate. Step 5 runs only when the user requests implementation/execution or an authorized experiment workflow has delegated it. Available GPUs and a positive claim verdict alone do not authorize new jobs.
 
 ## Workflow
 
@@ -109,7 +115,7 @@ Before running anything, the local executor checks:
 - Dependencies - Which ablations can run in parallel?
 - Cuts - If budget is tight, propose removing lower-priority ablations and ask the reviewer agent to re-prioritize when possible
 
-### Step 5: Implement and Run
+### Step 5: Implement and Run (when execution is authorized)
 
 1. Create configs or scripts for each ablation (config-only changes first)
 2. Smoke test each ablation before the full run

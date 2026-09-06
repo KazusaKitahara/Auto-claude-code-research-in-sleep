@@ -1,11 +1,11 @@
 ---
 name: "paper-write"
-description: "Draft LaTeX paper section by section from an outline. Use when user says \"写论文\", \"write paper\", \"draft LaTeX\", \"开始写\", or wants to generate LaTeX content from a paper plan."
+description: "Draft or revise LaTeX manuscript sections from an outline and research evidence. Use for a paper draft or a scoped manuscript edit; use paper-writing for the complete generation and assurance pipeline. Uses the configured Claude review backend."
 ---
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> For a completed review whose actual reviewer is a different model family from the Codex executor, the overlay trace/audit records:
 >
 > ```yaml
 > review_independence: cross-family
@@ -13,6 +13,25 @@ description: "Draft LaTeX paper section by section from an outline. Use when use
 > ```
 
 # Paper Write: Section-by-Section LaTeX Generation
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Claude review execution
+
+Use the configured Claude bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/claude-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 Draft a LaTeX paper based on: **$ARGUMENTS**
 
@@ -38,9 +57,9 @@ If no PAPER_PLAN.md exists, ask the user to run `/paper-plan` first or provide a
 
 Keep the existing workflow, file layout, and defaults. Use the shared references below only when they improve writing quality:
 
-- Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic
-- Read `../shared-references/venue-checklists.md` during the final write-up and submission-readiness pass
-- Read `../shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient
+- Read `shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic
+- Read `shared-references/venue-checklists.md` during the final write-up and submission-readiness pass
+- Read `shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient
 
 These references are support material, not extra workflow phases.
 
@@ -107,6 +126,10 @@ paper/
 
 **Section files are FLEXIBLE**: If the paper plan has 6-8 sections, create corresponding files (e.g., `4_theory.tex`, `5_experiments.tex`, `6_analysis.tex`, `7_conclusion.tex`).
 
+## Existing manuscripts and scoped edits
+
+For a requested section edit, operate on that section and its directly affected references, labels, or definitions. Reuse the existing template and project structure; skip project initialization, full-paper rewrite, and unrelated cleanup. Use compilation or a focused consistency check when the change warrants it. The complete sequence below applies to a requested new manuscript or full drafting pass.
+
 ## Workflow
 
 ### Step 0: Backup and Clean
@@ -158,7 +181,7 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 #### Section-Specific Guidelines
 
 **§0 Abstract:**
-- Use the 5-part flow from `../shared-references/writing-principles.md`: what, why hard, how, evidence, strongest result
+- Use the 5-part flow from `shared-references/writing-principles.md`: what, why hard, how, evidence, strongest result
 - Must be self-contained (understandable without reading the paper)
 - Structure: problem → approach → key result → implication
 - Include one concrete quantitative result
@@ -266,7 +289,7 @@ If both DBLP and CrossRef return nothing, mark the entry with `% [VERIFY]` comme
 
 **Why this matters:** LLM-generated BibTeX frequently hallucinates venue names, page numbers, or even co-authors. DBLP and CrossRef return publisher-verified metadata. Upstream skills (`/research-lit`, `/novelty-check`) may mention papers from LLM memory — this fetch chain is the gate that prevents hallucinated citations from entering the final `.bib`.
 
-If the DBLP/CrossRef flow is not enough, load `../shared-references/citation-discipline.md` for stricter fallback rules before adding placeholders.
+If the DBLP/CrossRef flow is not enough, load `shared-references/citation-discipline.md` for stricter fallback rules before adding placeholders.
 
 **Automated bib cleaning** — use this Python pattern to extract only cited entries:
 
@@ -303,7 +326,7 @@ After drafting all sections, run five sequential audit passes. De-AI polish is i
 
 After drafting all sections, scan for common AI writing patterns and fix them:
 
-First apply the sentence-level clarity rules from `../shared-references/writing-principles.md`:
+First apply the sentence-level clarity rules from `shared-references/writing-principles.md`:
 
 - keep subject and verb close together
 - put familiar context first and new information later
@@ -383,7 +406,7 @@ Before declaring done:
 - [ ] references.bib contains ONLY cited entries (no bloat)
 - [ ] **No stale section files** — every .tex in `sections/` is `\input`ed by `main.tex`
 - [ ] **Section files match main.tex** — file numbering and `\input` paths are consistent
-- [ ] Venue-specific required sections/checklists satisfied (read `../shared-references/venue-checklists.md` if needed)
+- [ ] Venue-specific required sections/checklists satisfied (read `shared-references/venue-checklists.md` if needed)
 - [ ] A skim reader can recover the main claim from the title, abstract, introduction, and Figure 1/captions
 
 ## Key Rules
@@ -474,9 +497,9 @@ Before declaring done:
 
 ## Writing Quality Reference
 
-- `../shared-references/writing-principles.md` — story framing, abstract/introduction patterns, sentence-level clarity, reviewer reading order
-- `../shared-references/venue-checklists.md` — ICLR/NeurIPS/ICML/IEEE submission requirements to check before declaring done
-- `../shared-references/citation-discipline.md` — stricter fallback for ambiguous citations
+- `shared-references/writing-principles.md` — story framing, abstract/introduction patterns, sentence-level clarity, reviewer reading order
+- `shared-references/venue-checklists.md` — ICLR/NeurIPS/ICML/IEEE submission requirements to check before declaring done
+- `shared-references/citation-discipline.md` — stricter fallback for ambiguous citations
 
 Principles from [Research-Paper-Writing-Skills](https://github.com/Master-cai/Research-Paper-Writing-Skills):
 

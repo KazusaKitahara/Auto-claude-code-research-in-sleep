@@ -1,9 +1,11 @@
 ---
 name: grant-proposal
-description: "Draft a structured grant proposal from research ideas and literature. Supports KAKENHI (Japan), NSF (US), NSFC (China, including 面上/青年/优青/杰青/海外优青/重点), ERC (EU), DFG (Germany), SNSF (Switzerland), ARC (Australia), NWO (Netherlands), and generic formats. Use when user says \"write grant\", \"grant proposal\", \"申請書\", \"write KAKENHI\", \"科研費\", \"基金申请\", \"写基金\", \"NSF proposal\", or wants to turn research ideas into a funding application."
+description: "Draft or revise a research grant proposal using the selected funder and current call requirements, including KAKENHI, NSF, NSFC, ERC, and generic formats. Use for funding-application writing."
 ---
 
 # Grant Proposal: From Research Ideas to Fundable Application
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -217,7 +219,7 @@ Invoke `/research-lit` to ground the proposal in real literature, then search fo
 Does this accurately capture the positioning? Should I adjust before designing the proposal structure?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true was explicitly set by the user.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options for the user:
 - Reply **"go"** or **"ok"** → proceed to Phase 2 with current positioning
@@ -570,7 +572,7 @@ What would you like to do next?
 - **Preliminary data de-risks.** Include any pilot results, existing datasets, or prior publications that demonstrate feasibility.
 - **Reviewer-facing structure.** Bold key sentences. Use numbered lists for clarity. Make the reviewer's job easy.
 - **Cultural norms matter.** KAKENHI expects 社会的意義; NSF expects Broader Impacts; NSFC expects 国际前沿 positioning. Missing these is a red flag for reviewers.
-- **Feishu notifications are optional.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final output. If absent, skip silently.
+- **Feishu notifications are optional and require existing user authorization.** If `~/.codex/feishu.json` exists, send `checkpoint` at each phase transition and `pipeline_done` at final output. If absent, skip silently.
 
 ## Parameter Pass-Through
 
@@ -590,7 +592,7 @@ Parameters can be passed inline with `—` separator. They flow to sub-skills wh
 | `sources` | all | Literature sources | → `/research-lit` |
 | `arxiv download` | false | Download arXiv PDFs | → `/research-lit` |
 | `reviewer model` | current configured model | Codex review model | → reviewer agent |
-| `auto proceed` | false | Skip checkpoints | — |
+| `auto proceed` | true | Continue authorized phases; false enables checkpoints | — |
 
 ## Composing with Other Skills
 

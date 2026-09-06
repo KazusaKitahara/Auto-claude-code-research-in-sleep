@@ -1,11 +1,13 @@
 ---
 name: rebuttal
-description: 'Workflow 4: Submission rebuttal pipeline. Parses external reviews, enforces coverage and grounding, drafts a safe text-only rebuttal under venue limits, and manages follow-up rounds. Use when user says "rebuttal", "reply to reviewers", "ICML rebuttal", "OpenReview response", or wants to answer external reviews safely.'
+description: "Draft and revise a grounded response to peer reviews under the venue’s current rebuttal rules. Use for reviewer replies or OpenReview response preparation; submission and new experiments require their own task authorization."
 metadata:
   argument-hint: '[paper-path-or-review-bundle]'
 ---
 
 # Workflow 4: Rebuttal
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -288,7 +290,7 @@ Skip if `RENDER_HTML = false`.
 
 ## Key Rules
 
-- **Large file handling**: If Write fails, retry with Bash heredoc silently.
+- **Large file handling**: If writing fails, inspect the error and use another permitted file-writing tool only for an ordinary tool/size limitation; never bypass a permission denial.
 - **Never fabricate.** No invented evidence, numbers, derivations, citations, or links.
 - **Never overpromise.** Only promise what user explicitly approved.
 - **Full coverage.** Every reviewer concern tracked and accounted for.

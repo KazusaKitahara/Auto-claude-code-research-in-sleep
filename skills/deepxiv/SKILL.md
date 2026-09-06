@@ -1,6 +1,6 @@
 ---
 name: deepxiv
-description: Search and progressively read open-access academic papers through DeepXiv. Use when the user wants layered paper access, section-level reading, trending papers, or DeepXiv-backed literature retrieval.
+description: "Search and progressively read academic papers through DeepXiv, including sections, metadata, and trending papers. Use when layered retrieval or DeepXiv-backed literature access is useful."
 argument-hint: "[query-or-paper-id]"
 allowed-tools: Bash(*), Read, Write
 ---

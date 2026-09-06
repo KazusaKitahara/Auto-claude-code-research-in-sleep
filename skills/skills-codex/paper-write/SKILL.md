@@ -1,9 +1,11 @@
 ---
 name: "paper-write"
-description: "Draft LaTeX paper section by section from an outline. Use when user says \\\"\u5199\u8bba\u6587\\\", \\\"write paper\\\", \\\"draft LaTeX\\\", \\\"\u5f00\u59cb\u5199\\\", or wants to generate LaTeX content from a paper plan."
+description: "Draft or revise LaTeX manuscript sections from an outline and research evidence. Use for a paper draft or a scoped manuscript edit; use paper-writing for the complete generation and assurance pipeline."
 ---
 
 # Paper Write: Section-by-Section LaTeX Generation
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -100,6 +102,10 @@ paper/
 ```
 
 **Section files are FLEXIBLE**: If the paper plan has 6-8 sections, create corresponding files (e.g., `4_theory.tex`, `5_experiments.tex`, `6_analysis.tex`, `7_conclusion.tex`).
+
+## Existing manuscripts and scoped edits
+
+For a requested section edit, operate on that section and its directly affected references, labels, or definitions. Reuse the existing template and project structure; skip project initialization, full-paper rewrite, and unrelated cleanup. Use compilation or a focused consistency check when the change warrants it. The complete sequence below applies to a requested new manuscript or full drafting pass.
 
 ## Workflow
 

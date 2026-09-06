@@ -1,9 +1,11 @@
 ---
 name: "research-refine"
-description: "Turn a vague research direction into a problem-anchored, elegant, frontier-aware, implementation-oriented method plan via iterative Codex review. Use when the user says \"refine my approach\", \"\u5e2e\u6211\u7ec6\u5316\u65b9\u6848\", \"decompose this problem\", \"\u6253\u78e8idea\", \"refine research plan\", \"\u7ec6\u5316\u7814\u7a76\u65b9\u6848\", or wants a concrete research method that stays simple, focused, and top-venue ready instead of a vague or overbuilt idea."
+description: "Refine a research direction into a focused method proposal using literature and bounded critical review. Use for research-method development; this planning workflow does not launch experiments."
 ---
 
 # Research Refine: Problem-Anchored, Elegant, Frontier-Aware Plan Refinement
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Refine and concretize: **$ARGUMENTS**
 
@@ -29,6 +31,10 @@ User input (PROBLEM + vague APPROACH)
   -> Phase 5: Save full history to refine-logs/
   -> Optional handoff: /experiment-plan for a detailed execution-ready experiment roadmap
 ```
+
+## Loop boundaries
+
+Resolve the requested target, permitted edits, and concrete round/time/compute limits before starting. Reuse prior authorization for in-scope fixes. A review-only request ends with findings; an iterative repair request runs the loop. Stop on completion, cancellation, the first limit, or no material progress in two successive rounds, and report remaining issues. A reviewer error is not permission to switch providers, rerun a possibly dispatched paid call, or count a missing review as a pass.
 
 ## Constants
 

@@ -1,11 +1,30 @@
 ---
 name: "idea-discovery-robot"
-description: "Workflow 1 adaptation for robotics and embodied AI. Orchestrates robotics-aware literature survey, idea generation, novelty check, and critical review to go from a broad robotics direction to benchmark-grounded, simulation-first ideas. Use when user says \\\"robotics idea discovery\\\", \\\"\u673a\u5668\u4eba\u627eidea\\\", \\\"embodied AI idea\\\", \\\"\u673a\u5668\u4eba\u65b9\u5411\u63a2\u7d22\\\", \\\"sim2real \u9009\u9898\\\", or wants ideas for manipulation, locomotion, navigation, drones, humanoids, or general robot learning."
+description: "Run a robotics or embodied-AI idea-discovery pipeline with benchmark grounding, novelty checks, and simulation-first validation. Use for a complete robotics discovery workflow; physical robot execution needs specific authorization. Uses the configured Gemini review backend."
 ---
 
 > Override for Codex users who want **Gemini**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Robotics Idea Discovery Pipeline
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -133,7 +152,7 @@ Main gaps:
 Should I generate ideas under this framing, or should I narrow to a specific robot / benchmark / modality?
 ```
 
-- **User approves** (or no response + AUTO_PROCEED=true) → proceed to Phase 2 with the best robotics frame.
+- **User approves** (or AUTO_PROCEED=true reports its selection and continues in the same turn) → proceed to Phase 2 with the best robotics frame.
 - **User requests changes** (e.g. narrower embodiment, different benchmark family, no sim2real, no hardware) → refine the robotics frame, re-run Phase 1, and present again.
 
 ## Phase 2: Robotics-Specific Idea Generation and Filtering
@@ -337,9 +356,9 @@ Write or update `idea-stage/IDEA_REPORT.md` with a robotics-specific structure s
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](#shared-references) (`shared-references/output-versioning.md`)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](#shared-references) (`shared-references/output-manifest.md`)** — log every output to MANIFEST.md
+> - **[Output Language Protocol](#shared-references) (`shared-references/output-language.md`)** — respect the project's language setting
 
 ## Key Rules
 

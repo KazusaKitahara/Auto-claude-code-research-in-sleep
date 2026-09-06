@@ -1,11 +1,17 @@
 ---
 name: paper-illustration-image2
-description: Generate publication-quality academic illustrations through a local Codex app-server bridge that uses Codex native image generation. This is a separate experimental alternative to `paper-illustration`, intended for Claude Code users who want a GPT-image-style renderer without modifying the original skill.
+description: "Generate or refine academic raster illustrations through the experimental local Codex app-server image bridge. Use when the user selects the image2 bridge or this available Codex-native rendering route."
 metadata:
   argument-hint: '[description-or-method-file]'
 ---
 
 # Paper Illustration Image2
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Generate publication-quality paper figures using **Claude as the planner/reviewer**
 and a **local Codex app-server MCP bridge** as the raster renderer.
@@ -92,6 +98,7 @@ and a **local Codex app-server MCP bridge** as the raster renderer.
   [ -z "$IMAGE2_HELPER" ] && [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/skills/paper-illustration-image2/scripts/paper_illustration_image2.py" ] && IMAGE2_HELPER="$ARIS_REPO/skills/paper-illustration-image2/scripts/paper_illustration_image2.py"
   [ -z "$IMAGE2_HELPER" ] && [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/paper_illustration_image2.py" ] && IMAGE2_HELPER="$ARIS_REPO/tools/paper_illustration_image2.py"
   [ -z "$IMAGE2_HELPER" ] && [ -f tools/paper_illustration_image2.py ] && IMAGE2_HELPER="tools/paper_illustration_image2.py"
+  [ -z "$IMAGE2_HELPER" ] && [ -f "$HOME/.agents/skills/paper-illustration-image2/scripts/paper_illustration_image2.py" ] && IMAGE2_HELPER="$HOME/.agents/skills/paper-illustration-image2/scripts/paper_illustration_image2.py"
   [ -z "$IMAGE2_HELPER" ] && [ -f ~/.codex/skills/paper-illustration-image2/scripts/paper_illustration_image2.py ] && IMAGE2_HELPER="$HOME/.codex/skills/paper-illustration-image2/scripts/paper_illustration_image2.py"
   [ -z "$IMAGE2_HELPER" ] && {
     echo "ERROR: paper_illustration_image2.py not resolved at .agents/skills/, \$ARIS_REPO/skills/, \$ARIS_REPO/tools/, tools/, or ~/.codex/skills/." >&2

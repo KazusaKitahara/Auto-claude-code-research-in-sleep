@@ -1,6 +1,6 @@
 ---
 name: patent-novelty-check
-description: "Assess patent novelty and non-obviousness against prior art. Use when user says \"专利查新\", \"patent novelty\", \"可专利性评估\", \"patentability check\", or wants to evaluate if an invention is patentable."
+description: "Compare an invention against prior art for potential patent novelty and non-obviousness issues. Use for patentability research, with jurisdiction and evidence limits stated."
 argument-hint: "[invention-description-or-brief-path]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex
 ---

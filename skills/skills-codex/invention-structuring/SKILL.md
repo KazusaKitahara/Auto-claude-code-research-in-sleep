@@ -1,6 +1,6 @@
 ---
 name: invention-structuring
-description: Structure a raw invention idea into a formal invention disclosure. Use when user says "构建发明", "structure invention", "发明构建", "invention disclosure", or wants to formalize a rough idea into a patent-ready structure.
+description: "Turn a rough invention into a structured invention disclosure with technical problems, features, effects, and embodiments. Use before patent claims or application drafting."
 metadata:
   argument-hint: '[invention-description-or-brief-path]'
 ---
@@ -188,4 +188,4 @@ Write `patent/INVENTION_DISCLOSURE.md`:
 - The core inventive concept must be the minimum set of features for patentability.
 - Supporting features should be independently valuable -- each should provide a meaningful technical benefit even if other supporting features are removed.
 - Never invent embodiments that do not correspond to the actual invention or user-provided materials.
-- If reviewer delegation is unavailable in the current Codex host, stop and ask the user to enable Codex agent support before continuing.
+- If the requested reviewer is unavailable, mark that review pending/unavailable and finish independent drafting or evidence preparation. Do not claim examiner acceptance or silently substitute a local PASS.

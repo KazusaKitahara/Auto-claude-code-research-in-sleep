@@ -1,11 +1,17 @@
 ---
 name: result-to-claim
-description: Use when experiments complete to judge what claims the results support, what they don't, and what evidence is still missing. A secondary Codex agent evaluates results against intended claims and routes to next action (pivot, supplement, or confirm). Use after experiments finish — before writing the paper or running ablations.
+description: "Assess which research claims are supported by existing experiment results and identify missing evidence. Use after experiments or before writing claims; recommend subsequent runs without launching them unless authorized. Base Codex semantic review is same-family provisional."
 metadata:
   argument-hint: '[experiment-description-or-wandb-run]'
 ---
 
 # Result-to-Claim Gate
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -15,7 +21,7 @@ Reviewer calls follow [the current routing contract](../shared-references/review
 > and `acceptance_status: provisional`. Cross-family overlays may record
 > accepted; reviewer failure emits BLOCKED.
 
-Experiments produce numbers; this gate decides what those numbers *mean*. Collect results from available sources, get a secondary Codex judgment, then auto-route based on the verdict.
+Experiments produce numbers; this gate decides what those numbers *mean*. Collect results from available sources, get a secondary Codex judgment, then recommend the next action based on the verdict.
 
 ## Context: $ARGUMENTS
 
@@ -31,7 +37,7 @@ Experiments produce numbers; this gate decides what those numbers *mean*. Collec
 
 Gather experiment data from whatever sources are available in the project:
 
-1. **W&B** (preferred): `wandb.Api().run("<entity>/<project>/<run_id>").history()` — metrics, training curves, comparisons
+1. **W&B** (when configured): inspect run summary/config for final metrics and `scan_history()` for exact required history rows. Sampled `history()` plots alone must not establish a numerical claim.
 2. **EXPERIMENT_LOG.md**: full results table with baselines and verdicts
 3. **EXPERIMENT_TRACKER.md**: check which experiments are DONE vs still running
 4. **Log files**: `ssh server "tail -100 /path/to/training.log"` if no other source
@@ -89,8 +95,11 @@ spawn_agent:
     Experiments run:
     [list experiments with method, dataset, metrics]
 
-    Results:
-    [paste key numbers, comparison deltas, significance]
+    Primary evidence:
+    [absolute raw result/config/log paths; read and verify the numbers directly]
+
+    Results to verify:
+    [key numbers with exact source paths and metric keys]
 
     Baselines:
     [baseline numbers and sources — reproduced or from paper]
@@ -149,7 +158,9 @@ else:
 
 See `shared-references/experiment-integrity.md` for the full integrity protocol.
 
-### Step 4: Route Based on Verdict
+### Step 4: Recommend or Execute the Authorized Next Action
+
+For an assessment-only request, record the verdict and recommendations, then finish. The execution actions below apply only within an already authorized experiment or improvement workflow and share its run and compute limits. Do not recursively launch experiments just because a verdict is `partial`.
 
 #### `no` — Claim not supported
 
@@ -163,14 +174,14 @@ See `shared-references/experiment-integrity.md` for the full integrity protocol.
 
 1. Update the working claim to reflect what IS supported
 2. Record the gap in findings.md
-3. Design and run supplementary experiments to fill evidence gaps
+3. Propose supplementary experiments to fill evidence gaps; run them only when execution is authorized
 4. Re-run result-to-claim after supplementary experiments complete
 5. **Multiple rounds of `partial` on the same claim** → record analysis in findings.md, consider whether to narrow the claim scope or switch ideas
 
 #### `yes` — Claim supported
 
 1. Record confirmed claim in project notes
-2. If ablation studies are incomplete → trigger `/ablation-planner`
+2. If ablation studies are incomplete → recommend `/ablation-planner`, or invoke its planning mode within an authorized workflow
 3. If all evidence is in → ready for paper writing
 
 ### Step 5: Update Research Wiki (if active)
@@ -184,6 +195,7 @@ if research-wiki/ exists:
     WIKI_SCRIPT=""
     [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+    [ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
     [ -n "$WIKI_SCRIPT" ] || echo "WARN: research_wiki.py unreachable; skipping wiki writes (verdict still reported)." >&2
 
@@ -232,7 +244,7 @@ if research-wiki/ exists:
 - **The secondary Codex agent is the judge, not the local executor.** The local executor collects evidence and routes; the reviewer agent evaluates. This prevents post-hoc rationalization.
 - Do not inflate claims beyond what the data supports. If Codex says "partial", do not round up to "yes".
 - A single positive result on one dataset does not support a general claim. Be honest about scope.
-- If `confidence` is low, treat the judgment as inconclusive and add experiments rather than committing to a claim.
+- If `confidence` is low, treat the judgment as inconclusive and identify the missing experiments rather than committing to a claim.
 - **Fail closed if the reviewer is unavailable.** Follow the capability fallback
   in `reviewer-routing.md`, and never downgrade on timeout, rate-limit, auth,
   transport, server, or context errors. If no allowed pair succeeds, write a

@@ -1,11 +1,13 @@
 ---
 name: citation-audit
-description: "Zero-context verification that every bibliographic entry in the paper is real, correctly attributed, and used in a context the cited paper actually supports — catching hallucinated authors, wrong years, fabricated venues, version mismatches, and wrong-context citations. Use when user says \"审查引用\", \"check citations\", \"citation audit\", \"verify references\", \"引用核对\", or before submission to ensure bibliography integrity."
+description: "Verify a manuscript bibliography and whether cited sources support the surrounding claims. Use for citation or reference audits, or an authorized submission-integrity check."
 argument-hint: "[paper-directory-or-bib-file] [--uncited] [— soft-only]"
 allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write, mcp__codex__codex, WebSearch, WebFetch
 ---
 
 # Citation Audit
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** It is
 > verdict-bearing — it judges bibliographic correctness. Re-running that verdict
@@ -227,7 +229,7 @@ Fix [key]?
 [Apply / Skip / Defer]
 ```
 
-If `AUTO_APPLY = true`, apply all FIX-level changes (metadata corrections only). REPLACE and REMOVE always require human approval — they involve content changes.
+If `AUTO_APPLY = true`, apply all FIX-level changes (metadata corrections only). REPLACE and REMOVE need authorization for the concrete content/claim change. Use existing authorization when the requested correction covers it; otherwise present the proposed edit for a decision.
 
 ### Step 7: Recompile and verify
 
@@ -280,7 +282,7 @@ If the bib file cannot be read well enough to audit even the cited entries, fall
 - **Fresh reviewer thread per audit run** — never reuse prior review context
 - **Web access required** — the reviewer must do real lookups, not memory pattern-match
 - **Wrong-context > metadata** — a real paper used to support a wrong claim is more dangerous than a typo in author name
-- **REPLACE/REMOVE require human approval** — never auto-modify content claims
+- **REPLACE/REMOVE require content-change authorization** — carry existing approval forward; propose any substantive claim change outside it
 - **Always emit, never block** — this skill always writes `CITATION_AUDIT.json` with a verdict; the decision to block finalization lives in `paper-writing` Phase 6 + `verify_paper_audits.sh`, driven by the `assurance` level. See "Submission Artifact Emission" below.
 - **Run once per submission** — the audit is wall-clock expensive (web lookups for each entry); not for every save
 - **Uncited detection is opt-in only** — never auto-enable; never block on uncited entries; existing callers must observe identical output if they do not pass `--uncited`

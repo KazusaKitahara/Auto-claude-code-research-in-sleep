@@ -1,11 +1,13 @@
 ---
 name: patent-review
-description: "Get an external patent examiner review of a patent application. Use when user says \"专利审查\", \"patent review\", \"审查意见\", \"examiner review\", or wants critical feedback on patent claims and specification."
+description: "Provide examiner-style critical feedback on patent claims and specification using the selected reviewer. Use for patent application review, not an official examination or an automatic rewrite."
 argument-hint: "[patent-directory-or-scope]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Patent Examiner Review via Codex MCP (xhigh reasoning)
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Get a multi-round patent examiner review of the patent application based on: **$ARGUMENTS**
 

@@ -2,8 +2,10 @@
 
 Codex-side resolution chain for `research_wiki.py`. Same purpose as the
 CC mirror at `../shared-references/wiki-helper-resolution.md`, adapted
-for Codex's install layout (the helper may live under
-`~/.codex/skills/research-wiki/` for global installs).
+for Codex's current project/personal skill paths and ARIS repository helpers.
+Resolve the loaded SKILL.md real path first and use its containing ARIS checkout
+as `ARIS_REPO` when available. Preserve an explicitly configured `ARIS_REPO`.
+The `~/.codex/skills/` layer is a legacy fallback.
 
 ## The chain
 
@@ -18,6 +20,7 @@ fi
 WIKI_SCRIPT=""
 [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+[ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
 ```
 
@@ -54,8 +57,8 @@ After Variant B, every helper invocation must be guarded:
 | | CC | Codex |
 |---|---|---|
 | Manifest filename | `installed-skills.txt` | `installed-skills-codex.txt` |
-| Symlink layer (`.aris/tools/...`) | yes (PR #174 / #192) | no — Codex install model is direct copy under `~/.codex/skills/`, no symlink |
-| Global-install layer (`~/.codex/skills/<name>/...`) | no | yes |
+| Symlink layer (`.aris/tools/...`) | yes (PR #174 / #192) | project installer uses `.agents/skills/<name>` symlinks; resolve their real checkout first |
+| Global-install layer (`~/.agents/skills/<name>/...`, legacy `~/.codex/skills/...`) | no | yes |
 | `cd "$(git rev-parse --show-toplevel)"` preamble | yes — guards subdir cwd | optional — Codex usually invokes from project root |
 | Global pointer file (`~/.aris/repo`) | yes (layer 4, #366) | yes — same file, read before the `~/.codex/skills/...` global-install layer |
 

@@ -1,11 +1,13 @@
 ---
 name: resubmit-pipeline
-description: Coordinate a paper resubmission to another venue under the user’s stated limits, preserving prior submissions. Use for 重投流程、resubmit pipeline、改投期刊; honor explicit constraints on new experiments, references, and framework changes.
+description: "Prepare a paper for resubmission to another venue under the user’s stated limits while preserving the previous submission. Use for a complete venue-change workflow, respecting constraints on experiments and references."
 metadata:
   argument-hint: '[paper-base-dir] [— target-venue: <name>] [— review-corpus: <path>]'
 ---
 
 # Resubmit Pipeline: Text-Only Microedit Mode
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Compose a polished paper into a new venue under text-only constraints: **$ARGUMENTS**
 

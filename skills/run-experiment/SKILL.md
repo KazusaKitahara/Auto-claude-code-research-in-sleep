@@ -1,11 +1,13 @@
 ---
 name: run-experiment
-description: Deploy and run ML experiments on local, remote, Vast.ai, or Modal serverless GPU. Use when user says "run experiment", "deploy to server", "跑实验", or needs to launch training jobs.
+description: "Prepare and launch authorized ML experiments on the selected local or remote compute backend, then verify startup and result paths. Use for experiment or training-job execution."
 argument-hint: "[experiment-description]"
 allowed-tools: Bash(*), Read, Grep, Glob, Edit, Write, Skill(serverless-modal)
 ---
 
 # Run Experiment
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Deploy and run ML experiment: $ARGUMENTS
 
@@ -225,7 +227,7 @@ Check process is running and GPU is allocated.
 
 ### Step 6: Feishu Notification (if configured)
 
-After deployment is verified, check `~/.claude/feishu.json`:
+After deployment is verified, check `~/.claude/feishu.json` only when the user authorized notifications:
 - Send `experiment_done` notification: which experiments launched, which GPUs, estimated time
 - If config absent or mode `"off"`: skip entirely (no-op)
 

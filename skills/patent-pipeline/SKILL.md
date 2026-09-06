@@ -1,11 +1,13 @@
 ---
 name: patent-pipeline
-description: "Full patent drafting pipeline from invention description to jurisdiction-formatted filing documents. Supports CN (CNIPA), US (USPTO), EP (EPO). Supports invention patents and utility models. Use when user says \"写专利\", \"patent pipeline\", \"专利申请\", \"draft patent\", \"写权利要求书\", or wants to draft a complete patent application."
+description: "Draft a complete patent application from an invention through claims, specification, review, and CN/US/EP document formatting. Use for a full application workflow; use claims-drafting for claims alone."
 argument-hint: "[invention-description — jurisdiction]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Skill, mcp__codex__codex
 ---
 
 # Patent Pipeline: From Invention to Filing
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Draft a complete patent application based on: **$ARGUMENTS**
 
@@ -40,7 +42,7 @@ Patents are about **protecting inventions** (legal scope), not publishing result
 - **PATENT_TYPE = `invention`** — `invention` (发明专利, 20 year protection) or `utility_model` (实用新型, CN only, 10 year protection, apparatus claims only). Override via argument.
 - **REVIEWER_MODEL = `gpt-5.6-sol`** — Model used via Codex MCP for examiner-style review.
 - **MAX_REVIEW_ROUNDS = 2** — Maximum review-revision cycles.
-- **AUTO_PROCEED = false** — At each checkpoint, **always wait for explicit user confirmation**. Patent applications require inventor judgment at every stage. Set `true` only if user explicitly requests autonomous mode.
+- **AUTO_PROCEED = true** — Continue the requested drafting phases. Set `false` for user-requested interactive checkpoints; unresolved scientific choices, new commitments, and filing/submission authority still require the relevant decision.
 - **LANGUAGE = `auto`** — Output language. Auto-detected from jurisdiction: CN->Chinese, US->English, EP->English. Override explicitly if needed.
 - **OUTPUT_DIR = `patent/`** — Directory for generated patent files.
 - **OUTPUT_FORMAT = `markdown`** — Draft format. `markdown` for review, `docx` for filing-ready.
@@ -160,7 +162,7 @@ Prior art search complete:
 Ready to proceed with invention structuring?
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options:
 - Reply **"go"** -> proceed to Phase 2
@@ -204,7 +206,7 @@ Invention structured:
 The claims define the legal scope of protection. Please review before proceeding to specification.
 ```
 
-**⛔ STOP HERE and wait for user response.** Do NOT auto-proceed unless AUTO_PROCEED=true.
+When `AUTO_PROCEED=true`, state the selected direction and continue the authorized drafting work. When `AUTO_PROCEED=false`, present this concrete checkpoint and wait for the user’s decision.
 
 Options:
 - Reply **"go"** -> proceed to Phase 3
@@ -320,7 +322,7 @@ This compiles the application into the target jurisdiction format(s).
 - Utility model (实用新型) applies ONLY to CN jurisdiction and ONLY covers apparatus/device claims.
 - AUTO_PROCEED defaults to false -- patent applications require human review at every phase. Sub-skills inherit this flag: when AUTO_PROCEED=false, sub-skills present results and wait at their own internal checkpoints too.
 - The patent pipeline produces drafts for attorney review, not final filing documents.
-- Large file handling: if a Write operation fails, retry with Bash `cat <<'EOF'` heredoc.
+- Large file handling: if a write fails, distinguish a size/tool limitation from a permission denial. Use an available permitted file-writing mechanism for the former; do not bypass the latter.
 - Never include experimental results or empirical evaluations in the specification.
 - Consistent terminology is mandatory -- same word for the same concept throughout.
 - If `mcp__codex__codex` is not available (no OpenAI API key), skip external cross-model review and note it in the output. The pipeline must not fail due to missing reviewer access.

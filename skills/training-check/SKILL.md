@@ -1,11 +1,13 @@
 ---
 name: training-check
-description: Periodically check WandB metrics during training to catch problems early (NaN, loss divergence, idle GPUs). Avoids wasting GPU hours on broken runs. Use when training is running and you want automated health checks.
+description: "Monitor identified training runs over a bounded interval for NaNs, divergence, stalls, or plateaus using W&B or logs. Use when ongoing training checks are requested; use monitor-experiment for one status snapshot."
 argument-hint: "[wandb-run-path]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Training Check
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Periodically read WandB metrics during training to catch problems early. Do not wait until training finishes to discover it was a waste of GPU time.
 
@@ -16,6 +18,12 @@ Periodically read WandB metrics during training to catch problems early. Do not 
 > The occasional Codex call for an ambiguous metric is a **one-shot** check per
 > tick, not a multi-round verdict loop, so it stays additive — it never grows
 > into a wrapped verdict skill.
+
+## Monitoring authority and duration
+
+Monitoring alone does not authorize stopping or restarting a training job. `AUTO_STOP` is true only when the user has delegated intervention for the named run and its stop criteria; otherwise `STOP` is a recommendation and the job keeps running. A supplied stop command is an implementation detail, not authorization. Never kill unrelated sessions or delete checkpoints.
+
+Use the requested monitoring duration or check count. If neither is supplied, perform the initial check and one follow-up, then report the state and end monitoring. Use a cancellable host scheduler/wait capability for long intervals; do not claim a background monitor remains active after the session ends. Stop monitoring when the identified run finishes, the limit is reached, or the user cancels.
 
 ## Context: $ARGUMENTS
 
@@ -59,9 +67,9 @@ Check these signals:
 
 | Signal | Judgment | Action |
 |--------|----------|--------|
-| NaN/Inf in loss | **Clearly bad** | Stop training, investigate |
-| Loss diverging (increasing for >N steps) | **Clearly bad** | Stop training, investigate |
-| Eval metrics significantly worse than baseline | **Clearly bad** | Stop training, investigate |
+| NaN/Inf in loss | **Clearly bad** | Recommend stopping; act only with `AUTO_STOP` authorization |
+| Loss diverging (increasing for >N steps) | **Clearly bad** | Recommend stopping; act only with `AUTO_STOP` authorization |
+| Eval metrics significantly worse than baseline | **Clearly bad** | Recommend stopping; act only with `AUTO_STOP` authorization |
 | Loss decreasing, metrics improving | **Clearly fine** | Continue, increase check interval |
 | Loss flat but not diverging | **Unsure** | → Step 3 (Codex judgment) |
 | Metrics noisy, can't tell trend | **Unsure** | → Step 3 (Codex judgment) |
@@ -96,7 +104,7 @@ mcp__codex__codex:
 
 | Decision | Action |
 |----------|--------|
-| **Stop** | Kill the training session. Save the WandB run URL, key metrics, and reason for stopping. Log to project notes for debugging. |
+| **Stop** | If `AUTO_STOP` is authorized, stop only the identified training session; otherwise report the recommendation. Save the WandB run URL, key metrics, and reason for stopping. Log to project notes for debugging. |
 | **Continue** | Do nothing. Will be invoked again at next interval (increase interval if consistently healthy). |
 | **Wait** | Do nothing but keep the current short interval (don't increase). |
 

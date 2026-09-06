@@ -1,11 +1,15 @@
 ---
 name: "monitor-experiment"
-description: "Monitor running experiments, check progress, collect results. Use when user says \"check results\", \"is it done\", \"monitor\", or wants experiment output."
+description: "Inspect an identified running ML experiment, summarize progress, and collect available results from its actual backend. Use for experiment status checks; continuous monitoring is a separate requested mode."
 ---
 
 # Monitor Experiment Results
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 Monitor: $ARGUMENTS
+
+Perform one status snapshot by default. Use only the identified experiment’s jobs and result paths. Report a suspected failure with its evidence; restarting jobs, killing training, rentals, and repeated monitoring require the corresponding authorized mode.
 
 ## Workflow
 
@@ -86,7 +90,7 @@ Present results in a comparison table:
 
 ### Step 6: Feishu Notification (if configured)
 
-After results are collected, check `~/.codex/feishu.json`:
+After results are collected, check `~/.codex/feishu.json` only when the user authorized notifications:
 - Send `experiment_done` notification: results summary table, delta vs baseline
 - If config absent or mode `"off"`: skip entirely (no-op)
 

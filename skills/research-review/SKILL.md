@@ -1,11 +1,13 @@
 ---
 name: research-review
-description: Get a deep critical review of research from an external reviewer backend (Codex or manual). Use when user says "review my research", "help me review", "get external review", or wants critical feedback on research ideas, papers, or experimental results.
+description: "Provide critical feedback on research ideas, papers, or experiment results using the selected reviewer. Use for a research review; do not automatically implement findings or start an improvement loop."
 argument-hint: "[topic-or-scope]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__codex__codex-reply, mcp__manual_review__review, mcp__manual_review__review_reply
 ---
 
 # Research Review via External Reviewer Backend (ultra reasoning)
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** It is
 > verdict-bearing — it produces a cross-model review verdict, multi-round with
@@ -55,6 +57,10 @@ equally to both backends.
   claude mcp add codex -s user -- codex mcp-server
   ```
 - This gives Claude Code access to `mcp__codex__codex` and `mcp__codex__codex-reply` tools
+
+## Review scope
+
+Return a review and prioritized recommendations. Do not edit the manuscript, implement experiments, or invoke an improvement pipeline unless the user also requested that work. One initial review normally suffices; use at most two targeted follow-ups for unresolved questions when they materially improve the requested review, unless the user sets another round limit. Reviewer agreement is not a reason to keep a completed review running.
 
 ## Workflow
 
@@ -157,7 +163,7 @@ Key follow-up patterns:
 - "Give me a results-to-claims matrix for possible experimental outcomes"
 
 ### Step 4: Convergence
-Stop iterating when:
+Stop when the requested review is complete, the round limit is reached, or another round would repeat unchanged evidence. For an explicitly requested iterative discussion, useful completion signals include:
 - Both sides agree on the core claims and their evidence requirements
 - A concrete experiment plan is established
 - The narrative structure is settled

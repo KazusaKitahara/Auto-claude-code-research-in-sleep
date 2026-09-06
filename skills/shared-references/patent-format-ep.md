@@ -19,10 +19,10 @@ Use this reference when drafting European patent applications for filing with th
 
 ### 1. Claims (Rule 43 EPC)
 
-**Two-part form is MANDATORY for independent claims (Rule 43(1) EPC):**
+**Use two-part form where appropriate under [EPC Rule 43(1)](https://www.epo.org/en/legal/epc/2020/r43.html); it is not a universal requirement:**
 
 The claim must contain:
-- **(a) Characterising portion**: A statement indicating:
+- **(a) Preamble / prior-art portion**: A statement indicating:
   - The category/title of the invention ("A method of...", "An apparatus for...")
   - Those features of the invention which are necessary to define the claimed subject-matter but which, in combination, form part of the prior art
 - **(b) Characterising portion**: After the phrase "characterised in that" (or "characterised by")
@@ -46,7 +46,7 @@ The claim must contain:
     [inventive component C] configured to [function].
 ```
 
-**Important:** The two-part form separates known features from inventive features. This is NOT optional at the EPO -- it is a formal requirement. The examiner will raise an objection if the form is not followed.
+Two-part form separates the relevant prior-art features from the characterising features. Assess whether that division appropriately describes this invention; preserve a supported one-part claim when it does not.
 
 **When two-part form is NOT applicable:**
 - Product-by-process claims (rare exceptions)
@@ -63,7 +63,7 @@ The claim must contain:
 - EPO allows multiple dependent claims (unlike some jurisdictions)
 - May refer to multiple preceding claims: "The method according to any one of claims 1 to 3..."
 - However, examiners may raise clarity objections if excessive
-- Multiple dependent claims referring to other multiple dependent claims are NOT allowed
+- Rule 43(4) permits dependence on other dependent claims. Check clarity and the actual claim dependency structure; do not import the US prohibition on nested multiple dependencies into EPO practice.
 
 ### 2. Description (Rule 42 EPC)
 

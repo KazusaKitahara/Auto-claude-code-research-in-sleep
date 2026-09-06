@@ -1,25 +1,19 @@
 ---
 name: feishu-notify
-description: "Send notifications to Feishu/Lark. Internal utility used by other skills, or manually via /feishu-notify. Use when user says \"发飞书\", \"notify feishu\", or other skills need to send status updates."
+description: "Send an explicitly requested Feishu/Lark message or a status notification covered by existing user authorization. Supports configured webhook and interactive bridge routes."
 argument-hint: "[message-text]"
 allowed-tools: Bash(curl *), Bash(cat *), Read, Glob
 ---
 
 # Feishu/Lark Notification
 
-Send a notification: **$ARGUMENTS**
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
-## Overview
-
-This skill provides Feishu/Lark integration for ARIS. It is designed as an **internal utility** — other skills call it at key events (experiment done, review scored, checkpoint waiting). It can also be invoked manually.
-
-**Zero-impact guarantee**: If no `feishu.json` config exists, this skill does nothing and returns silently. All existing workflows are completely unaffected.
+Send the authorized notification described by **$ARGUMENTS**. Other ARIS skills may call this utility only when the user has authorized their notifications to the configured destination. A config file or a caller's suggestion alone is not messaging authorization.
 
 ## Configuration
 
-The skill reads `~/.claude/feishu.json`. If this file does not exist, **all Feishu functionality is disabled** — skills behave exactly as before.
-
-### Config Format
+Read `~/.claude/feishu.json` inside the sending process. Do not print the config, webhook URL, tokens, or authorization headers to the transcript. A missing file or `mode: off` disables automatic notifications. For an explicit send request, explain a missing route instead of claiming delivery.
 
 ```json
 {
@@ -32,125 +26,84 @@ The skill reads `~/.claude/feishu.json`. If this file does not exist, **all Feis
 }
 ```
 
-### Modes
+- `off`: no notifications.
+- `push`: send a status card and return after checking delivery.
+- `interactive`: use the configured Feishu bridge to request and receive a decision.
 
-| Mode | `"mode"` value | What it does | Requires |
-|------|----------------|--------------|----------|
-| **Off** | `"off"` or file absent | Nothing. Pure CLI as-is | Nothing |
-| **Push only** | `"push"` | Send webhook notifications at key events. Mobile push, no reply | Feishu bot webhook URL |
-| **Interactive** | `"interactive"` | Full bidirectional. Approve/reject from Feishu, reply to checkpoints | [feishu-claude-code](https://github.com/joewongjc/feishu-claude-code) running |
+Inspect only redacted configuration facts if setup needs diagnosis, such as mode and whether the required fields are present. Preserve existing user configuration.
 
-## Workflow
+## Push workflow
 
-### Step 1: Read Config
-
-```bash
-cat ~/.claude/feishu.json 2>/dev/null
-```
-
-- **File not found** → return silently, do nothing
-- **`"mode": "off"`** → return silently, do nothing
-- **`"mode": "push"`** → proceed to Step 2 (push)
-- **`"mode": "interactive"`** → proceed to Step 3 (interactive)
-
-### Step 2: Push Notification (webhook)
-
-Send a rich card to the Feishu webhook:
+1. Resolve the destination and notification scope from existing user authorization.
+2. Prepare the card as JSON data in `.aris/feishu-message.json` using the host's file-writing tool. Include only the requested title and body; omit credentials and unrelated project contents.
+3. Send it with the configured route. This example reads secrets inside Python and does not interpolate message text into shell source:
 
 ```bash
-curl -s -X POST "$WEBHOOK_URL" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "msg_type": "interactive",
-    "card": {
-      "header": {
-        "title": {"tag": "plain_text", "content": "TITLE"},
-        "template": "COLOR"
-      },
-      "elements": [
-        {"tag": "markdown", "content": "BODY"}
-      ]
-    }
-  }'
+python3 - <<'PY_SEND'
+import json
+import os
+from pathlib import Path
+from urllib.error import URLError
+from urllib.request import Request, urlopen
+
+config_path = Path.home() / ".claude" / "feishu.json"
+if not config_path.exists():
+    print("Feishu disabled: config missing")
+    raise SystemExit(0)
+config = json.loads(config_path.read_text())
+if config.get("mode", "off") == "off":
+    print("Feishu disabled")
+    raise SystemExit(0)
+url = config.get("webhook_url")
+if not url:
+    raise SystemExit("Feishu delivery unavailable: webhook missing")
+payload = json.loads(Path(".aris/feishu-message.json").read_text())
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json"}, method="POST")
+try:
+    with urlopen(request, timeout=30) as response:
+        result = json.load(response)
+except (URLError, TimeoutError, ValueError):
+    raise SystemExit("Feishu delivery unconfirmed: request failed; do not blindly resend")
+if result.get("code", result.get("StatusCode")) != 0:
+    raise SystemExit("Feishu rejected the notification")
+print("Feishu delivered")
+PY_SEND
 ```
 
-**Card templates by event type:**
+A card payload has this shape; generate valid JSON rather than replacing placeholders inside shell commands:
 
-| Event | Title | Color | Body |
-|-------|-------|-------|------|
-| `experiment_done` | Experiment Complete | `green` | Results table, delta vs baseline |
-| `review_scored` | Review Round N: X/10 | `blue` (≥6) / `orange` (<6) | Score, verdict, top 3 weaknesses |
-| `checkpoint` | Checkpoint: Waiting for Input | `yellow` | Question, options, context |
-| `error` | Error: [type] | `red` | Error message, what failed |
-| `pipeline_done` | Pipeline Complete | `purple` | Final summary, deliverables |
-| `custom` | Custom | `blue` | Free-form message from $ARGUMENTS |
-
-**Return immediately after curl** — push mode never waits for a response.
-
-### Step 3: Interactive Notification (bidirectional)
-
-Interactive mode uses [feishu-claude-code](https://github.com/joewongjc/feishu-claude-code) as a bridge:
-
-1. **Send message** to the bridge:
-   ```bash
-   curl -s -X POST "$BRIDGE_URL/send" \
-     -H "Content-Type: application/json" \
-     -d '{"type": "EVENT_TYPE", "title": "TITLE", "body": "BODY", "options": ["approve", "reject", "custom"]}'
-   ```
-
-2. **Wait for reply** (with timeout):
-   ```bash
-   curl -s "$BRIDGE_URL/poll?timeout=$TIMEOUT_SECONDS"
-   ```
-   Returns: `{"reply": "approve"}` or `{"reply": "reject"}` or `{"reply": "user typed message"}` or `{"timeout": true}`
-
-3. **On timeout**: Fall back to `AUTO_PROCEED` behavior (proceed with default option).
-
-4. **Return the user's reply** to the calling skill so it can act on it.
-
-### Step 4: Verify Delivery
-
-- **Push mode**: Check curl exit code. If non-zero, log warning but do NOT block the workflow.
-- **Interactive mode**: If bridge is unreachable, fall back to push mode (if webhook configured) or skip silently.
-
-## Helper Function (for other skills)
-
-Other skills should use this pattern to send notifications:
-
-```markdown
-### Feishu Notification (if configured)
-
-Check if `~/.claude/feishu.json` exists and mode is not "off":
-- If **push** mode: send webhook notification with event summary
-- If **interactive** mode: send notification and wait for user reply
-- If **off** or file absent: skip entirely (no-op)
+```json
+{
+  "msg_type": "interactive",
+  "card": {
+    "header": {"title": {"tag": "plain_text", "content": "Experiment complete"}, "template": "green"},
+    "elements": [{"tag": "markdown", "content": "The requested run finished. Results: ..."}]
+  }
+}
 ```
 
-**This check is always guarded.** If the config file doesn't exist, the skill skips the notification block entirely — zero overhead, zero side effects.
+An ambiguous network failure is not proof that the message was unsent. Record delivery as unconfirmed instead of automatically duplicating it. A failed status notification does not block the underlying research work.
 
-## Event Catalog
+## Interactive decisions
 
-Skills send these events at these moments:
+The optional [Feishu bridge](https://github.com/joewongjc/feishu-claude-code) uses `POST /send` with `{type, title, body, options}` and `GET /poll?timeout=...` for replies. Use its installed API and associate the returned reply with the current request; do not invent capabilities or consume an unrelated decision.
 
-| Skill | Event | When |
-|-------|-------|------|
-| `/auto-review-loop` | `review_scored` | After each round's review score |
-| `/auto-review-loop` | `pipeline_done` | Loop complete (positive or max rounds) |
-| `/auto-paper-improvement-loop` | `review_scored` | After each round's review score |
-| `/auto-paper-improvement-loop` | `pipeline_done` | All rounds complete |
-| `/run-experiment` | `experiment_done` | Screen session finishes |
-| `/idea-discovery` | `checkpoint` | Between phases (if interactive) |
-| `/idea-discovery` | `pipeline_done` | Final report ready |
-| `/monitor-experiment` | `experiment_done` | Results collected |
-| `/research-pipeline` | `checkpoint` | Between workflow stages |
-| `/research-pipeline` | `pipeline_done` | Full pipeline complete |
+- Send the concrete checkpoint only when messaging and that interactive route are authorized.
+- Wait through a cancellable host mechanism, keeping the current decision pending. A reply such as `approve`, `reject`, or custom instructions applies only to the presented scope.
+- **Timeout is not approval.** Return `timeout` to the caller. A required user decision remains pending; continue only independent work already authorized.
+- If the bridge is unavailable, report that the decision route is unavailable and present the same checkpoint in the current conversation. Do not silently downgrade an approval gate to push-only mode.
+- `AUTO_PROCEED=true` may make a workflow selection checkpoint informational when no user decision is required. It cannot override a deliberately enabled interactive approval gate.
 
-## Key Rules
+## Caller events
 
-- **NEVER block a workflow** because Feishu is unreachable. Always fail open.
-- **NEVER require Feishu config** — all skills must work without it.
-- **Config file absent = mode off.** No error, no warning, no log.
-- **Push mode is fire-and-forget.** Send curl, check exit code, move on.
-- **Interactive timeout = auto-proceed.** Don't hang forever waiting for a reply.
-- **Respect `AUTO_PROCEED`**: In interactive mode, if the user doesn't reply within timeout, use the same auto-proceed logic as the calling skill.
-- **No secrets in notifications.** Never include API keys, tokens, or passwords in Feishu messages.
+| Event | Typical caller | Content |
+|---|---|---|
+| `experiment_done` | run-experiment, monitor-experiment | Status and requested results |
+| `review_scored` | auto-review-loop, auto-paper-improvement-loop | Actual review score, verdict, and key findings |
+| `checkpoint` | idea-discovery, research-pipeline | Concrete choice needing the user's decision |
+| `error` | Authorized workflow | Concise failure and next action |
+| `pipeline_done` | Authorized workflow | Deliverables and unresolved items |
+| `custom` | Explicit user invocation | Requested message |
+
+Every caller checks both authorization and configuration before sending. Automatic notifications remain a no-op when disabled. Never report success without a successful transport response.

@@ -20,6 +20,10 @@ Use this reference when `claims-drafting`, `specification-writing`, or `inventio
 
 ---
 
+## Current jurisdiction requirements
+
+Before relying on a filing rule, claim form, fee, or deadline, check the current official office materials for the selected jurisdiction. These references are drafting guides, not exhaustive statements of law. Preserve the requested technical disclosure and distinguish drafting preferences from actual requirements. Formatting a draft does not authorize filing or make a patentability determination final.
+
 ## Core Patent Writing Rules
 
 ### The Three Requirements
@@ -125,7 +129,7 @@ This multiplies the scope of protection without requiring separate applications.
 - Use result-to-be-achieved language: "configured to achieve high accuracy" (instead describe HOW)
 - Use relative terms without definition: "thin", "strong", "fast", "small"
 - Admit prior art is better: avoid "unlike the prior art, which works well, we..."
-- Include experimental results tables (save for prosecution arguments, not the spec itself)
+- Omit relevant supporting technical evidence solely to mimic a template. Include useful substantiated results where they support the disclosure, clearly distinguishing performed experiments from proposed examples.
 
 ### Reference Numeral Convention
 
@@ -194,4 +198,4 @@ If a term has a meaning specific to your invention:
 
 - **CN**: Use standard patent Chinese. "所述" (said/the), "其特征在于" (characterized in that), "一种...的方法/装置" (a method/apparatus for...)
 - **US**: Use standard patent English. "comprising", "configured to", "in communication with"
-- **EP**: Follow EPO Guidelines for Examination. Two-part claim form mandatory.
+- **EP**: Follow EPO Guidelines for Examination. Use two-part claims where appropriate under [EPC Rule 43(1)](https://www.epo.org/en/legal/epc/2020/r43.html).

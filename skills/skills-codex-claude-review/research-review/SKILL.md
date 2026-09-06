@@ -1,11 +1,11 @@
 ---
 name: "research-review"
-description: "Get a deep critical review of research from Claude via claude-review MCP. Use when user says \"review my research\", \"help me review\", \"get external review\", or wants critical feedback on research ideas, papers, or experimental results."
+description: "Provide critical feedback on research ideas, papers, or experiment results using the selected reviewer. Use for a research review; do not automatically implement findings or start an improvement loop. Uses the configured Claude review backend."
 ---
 
 > Override for Codex users who want **Claude Code**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 >
-> This reviewer is a different model family from the Codex executor. Every overlay trace/audit records:
+> For a completed review whose actual reviewer is a different model family from the Codex executor, the overlay trace/audit records:
 >
 > ```yaml
 > review_independence: cross-family
@@ -13,6 +13,25 @@ description: "Get a deep critical review of research from Claude via claude-revi
 > ```
 
 # Research Review via `claude-review` MCP (high-rigor review)
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Claude review execution
+
+Use the configured Claude bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/claude-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Claude overlay assurance:** this route is a different model family from the Codex executor and records `review_independence: cross-family` plus `acceptance_status: accepted`.
 
@@ -27,14 +46,18 @@ Get a multi-round critical review of research work from an external LLM with max
 
 ## Prerequisites
 
-- Install the base Codex-native skills first: copy `skills/skills-codex/*` into `~/.codex/skills/`.
-- Then install this overlay package: copy `skills/skills-codex-claude-review/*` into `~/.codex/skills/` and allow it to overwrite the same skill names.
+- Install the base Codex-native skills first: install `skills/skills-codex/*` through the project/personal Codex skill catalog.
+- Then install this overlay package: use `skills/skills-codex-claude-review/*` as the selected overrides for the matching base skill names.
 - Register the local reviewer bridge:
   ```bash
-  codex mcp add claude-review -- python3 ~/.codex/mcp-servers/claude-review/server.py
+  codex mcp add claude-review -- python3 "$ARIS_REPO/mcp-servers/claude-review/server.py"
   ```
 - This gives Codex access to `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, and `mcp__claude-review__review_status`.
 
+
+## Review scope
+
+Return a review and prioritized recommendations. Do not edit the manuscript, implement experiments, or invoke an improvement pipeline unless the user also requested that work. One initial review normally suffices; use at most two targeted follow-ups for unresolved questions when they materially improve the requested review, unless the user sets another round limit. Reviewer agreement is not a reason to keep a completed review running.
 
 ## Workflow
 
@@ -123,7 +146,7 @@ Key follow-up patterns:
 - "Give me a results-to-claims matrix for possible experimental outcomes"
 
 ### Step 4: Convergence
-Stop iterating when:
+Stop when the requested review is complete, the round limit is reached, or another round would repeat unchanged evidence. For an explicitly requested iterative discussion, useful completion signals include:
 - Both sides agree on the core claims and their evidence requirements
 - A concrete experiment plan is established
 - The narrative structure is settled
@@ -143,16 +166,16 @@ claims matrix, TODOs, and trace links into that report instead of writing a
 standalone review document. Without the directive, write the standalone review
 as documented; never infer composed mode from an existing file. `— standalone`
 always wins. See
-[`output-composition.md`](../shared-references/output-composition.md).
+[`output-composition.md`](#shared-references) (`shared-references/output-composition.md`).
 
 ### Step 6: Review Tracing
 
-Save a trace for every `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, or `oracle-pro` review call following `../shared-references/review-tracing.md`. Record the reviewer route, saved threadId, prompt summary, raw response path, decisions, and action items. This preserves the Claude mainline Review Tracing semantics while using Codex-native reviewer calls.
+Save a trace for every `mcp__claude-review__review_start`, `mcp__claude-review__review_reply_start`, or `oracle-pro` review call following `shared-references/review-tracing.md`. Record the reviewer route, saved threadId, prompt summary, raw response path, decisions, and action items. This preserves the Claude mainline Review Tracing semantics while using Codex-native reviewer calls.
 
 ## Key Rules
 
 - **Always ask the Claude reviewer for strict, high-rigor feedback** in every review round.
-- Send comprehensive context in Round 1 — the external model cannot read your files
+- Give file-capable reviewers primary artifact paths to read directly. For an authorized HTTP reviewer without filesystem access, send the necessary raw source content, not only an executor summary.
 - Be honest about weaknesses — hiding them leads to worse feedback
 - Push back on criticisms you disagree with, but accept valid ones
 - Focus on ACTIONABLE feedback — "what experiment would fix this?"

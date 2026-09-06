@@ -1,11 +1,13 @@
 ---
 name: jurisdiction-format
-description: Compile patent application into jurisdiction-specific filing format. Use when user says "格式转换", "jurisdiction format", "国家格式", "compile patent", or wants formatted patent documents for CN/US/EP filing.
+description: "Format an existing patent application for the selected CN, US, or EP jurisdiction using current official requirements. Use for patent document preparation; formatting does not file the application."
 metadata:
   argument-hint: '[patent-directory-or-jurisdiction]'
 ---
 
 # Jurisdiction Format: Patent Filing Compilation
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Compile the patent application into filing-ready format based on: **$ARGUMENTS**
 

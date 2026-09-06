@@ -1,11 +1,13 @@
 ---
 name: idea-discovery-robot
-description: "Workflow 1 adaptation for robotics and embodied AI. Orchestrates robotics-aware literature survey, idea generation, novelty check, and critical review to go from a broad robotics direction to benchmark-grounded, simulation-first ideas. Use when user says \"robotics idea discovery\", \"机器人找idea\", \"embodied AI idea\", \"机器人方向探索\", \"sim2real 选题\", or wants ideas for manipulation, locomotion, navigation, drones, humanoids, or general robot learning."
+description: "Run a robotics or embodied-AI idea-discovery pipeline with benchmark grounding, novelty checks, and simulation-first validation. Use for a complete robotics discovery workflow; physical robot execution needs specific authorization."
 argument-hint: "[robotics-direction]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Skill, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Robotics Idea Discovery Pipeline
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Orchestrate a robotics-specific idea discovery workflow for: **$ARGUMENTS**
 
@@ -131,7 +133,7 @@ Main gaps:
 Should I generate ideas under this framing, or should I narrow to a specific robot / benchmark / modality?
 ```
 
-- **User approves** (or no response + AUTO_PROCEED=true) → proceed to Phase 2 with the best robotics frame.
+- **User approves** (or AUTO_PROCEED=true reports its selection and continues in the same turn) → proceed to Phase 2 with the best robotics frame.
 - **User requests changes** (e.g. narrower embodiment, different benchmark family, no sim2real, no hardware) → refine the robotics frame, re-run Phase 1, and present again.
 
 ## Phase 2: Robotics-Specific Idea Generation and Filtering

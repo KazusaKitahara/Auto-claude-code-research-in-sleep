@@ -1,10 +1,12 @@
 ---
 name: proof-orchestrator
-description: "Manage a stateful, run-directory-based proof project: continuation across runs, run-local source bookkeeping, manual GPT Pro handoff packages when a local attempt stalls, and an optional DeepSeek second opinion as additional evidence only. Use when the user asks for proof-run orchestration, a GPT Pro handoff, or cross-run proof continuation — use /proof-writer for ordinary proof drafting and /proof-checker for rigorous verification or submission acceptance."
+description: "Manage a stateful proof project across run directories, including continuation, optional GPT Pro handoff packages, and optional DeepSeek second opinions. Use for proof-run orchestration; use proof-writer for ordinary drafting."
 allowed-tools: Read, Grep, Glob, Write, Edit, Skill(call-gpt-pro), mcp__llm_chat__chat
 ---
 
 # Proof Orchestrator
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 ## Role
 

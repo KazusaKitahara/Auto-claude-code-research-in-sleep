@@ -1,11 +1,30 @@
 ---
 name: "idea-creator"
-description: "Generate and rank research ideas given a broad direction. Use when user says \"\u627eidea\", \"brainstorm ideas\", \"generate research ideas\", \"what can we work on\", or wants to explore a research area for publishable directions."
+description: "Generate and rank research ideas from a broad research direction. Use for research brainstorming or candidate selection; compute-backed pilots require execution within an authorized plan and budget. Uses the configured Gemini review backend."
 ---
 
 > Override for Codex users who want **Gemini**, not a second Codex agent, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Research Idea Creator
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -14,6 +33,10 @@ Generate publishable research ideas for: $ARGUMENTS
 ## Overview
 
 Given a broad research direction from the user, systematically generate, validate, and rank concrete research ideas. Standalone, Phase 1's landscape survey is **inline** (WebSearch — it does not invoke `/research-lit`); Phases 4-5 invoke `/novelty-check`, `/run-experiment`, and `/monitor-experiment` for validation and pilots. For the full sub-skill pipeline (`/research-lit` → idea generation → `/novelty-check` → `/research-review`), run `/idea-discovery` (Workflow 1), which orchestrates this skill.
+
+## Pilot scope
+
+For brainstorming, complete literature grounding, candidate generation, novelty assessment, and ranking. Design possible pilots, but execute Phase 5 only when pilot execution and the relevant backend/budget are already authorized. Mark unrun pilots as proposed, never pilot-tested. Within an authorized discovery pipeline, keep the caller's tighter limits and do not acquire additional compute automatically.
 
 ## Constants
 
@@ -168,7 +191,7 @@ For each surviving idea, run a deeper evaluation:
 
 3. **Combine rankings**: Merge your assessment with Gemini's ranking. Select top 2-3 ideas for pilot experiments.
 
-### Phase 5: Parallel Pilot Experiments (for top 2-3 ideas)
+### Phase 5: Parallel Pilot Experiments (when authorized, for top 2-3 ideas)
 
 Before committing to a full research effort, run cheap pilot experiments to get empirical signal. This is the key differentiator from paper-only validation.
 
@@ -257,9 +280,9 @@ Write a structured report to `idea-stage/IDEA_REPORT.md`:
 ## Output Protocols
 
 > Follow these shared protocols for all output files:
-> - **[Output Versioning Protocol](../../shared-references/output-versioning.md)** — write timestamped file first, then copy to fixed name
-> - **[Output Manifest Protocol](../../shared-references/output-manifest.md)** — log every output to MANIFEST.md
-> - **[Output Language Protocol](../../shared-references/output-language.md)** — respect the project's language setting
+> - **[Output Versioning Protocol](#shared-references) (`shared-references/output-versioning.md`)** — write timestamped file first, then copy to fixed name
+> - **[Output Manifest Protocol](#shared-references) (`shared-references/output-manifest.md`)** — log every output to MANIFEST.md
+> - **[Output Language Protocol](#shared-references) (`shared-references/output-language.md`)** — respect the project's language setting
 
 ## Key Rules
 

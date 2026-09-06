@@ -1,11 +1,17 @@
 ---
 name: meta-apply
-description: Privileged applier that LANDS meta-optimize / corpus-audit patches the user approved, with a fresh landing review and human approval. Base Codex review is same-family provisional. Use when the user says "meta apply", "/meta-apply", "land the staged patches", "应用优化", after a /meta-optimize run.
+description: "Apply the staged ARIS self-modification patches the user selected, after a fresh landing review and provenance recording. Use for meta-apply or an explicit request to land reviewed staged proposals."
 metadata:
   argument-hint: '[patch-number-or-all]'
 ---
 
 # Meta-Apply: the privileged landing gate for self-modification patches
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Codex assurance:** a base landing review records
 > `review_independence: same-family` and `acceptance_status: provisional` via

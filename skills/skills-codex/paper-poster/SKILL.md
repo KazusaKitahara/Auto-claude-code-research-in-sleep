@@ -1,6 +1,6 @@
 ---
 name: paper-poster
-description: DEPRECATED — superseded by /paper-poster-html. Kept only as a redirect for muscle memory; do not use for new posters.
+description: "Redirect the legacy paper-poster invocation to paper-poster-html. Use this alias only when the user invokes it; select paper-poster-html for a new academic poster."
 metadata:
   argument-hint: '[paper-dir-or-pdf]'
 ---

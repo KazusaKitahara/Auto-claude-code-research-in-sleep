@@ -1,9 +1,11 @@
 ---
 name: "research-review"
-description: "Get a deep critical review of research from GPT using a secondary Codex agent. Use when user says \"review my research\", \"help me review\", \"get external review\", or wants critical feedback on research ideas, papers, or experimental results."
+description: "Provide critical feedback on research ideas, papers, or experiment results using the selected reviewer. Use for a research review; do not automatically implement findings or start an improvement loop. Base Codex semantic review is same-family provisional."
 ---
 
 # Research Review via a secondary Codex agent (configured reasoning effort)
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -26,6 +28,10 @@ Get a multi-round critical review of research work from an external LLM with max
 
 - Use `spawn_agent` and `send_input` when the user has explicitly allowed delegation or subagents.
 - If delegation is not allowed, run the same review loop locally and preserve the same deliverable structure.
+
+## Review scope
+
+Return a review and prioritized recommendations. Do not edit the manuscript, implement experiments, or invoke an improvement pipeline unless the user also requested that work. One initial review normally suffices; use at most two targeted follow-ups for unresolved questions when they materially improve the requested review, unless the user sets another round limit. Reviewer agreement is not a reason to keep a completed review running.
 
 ## Workflow
 
@@ -109,7 +115,7 @@ Key follow-up patterns:
 - "Give me a results-to-claims matrix for possible experimental outcomes"
 
 ### Step 4: Convergence
-Stop iterating when:
+Stop when the requested review is complete, the round limit is reached, or another round would repeat unchanged evidence. For an explicitly requested iterative discussion, useful completion signals include:
 - Both sides agree on the core claims and their evidence requirements
 - A concrete experiment plan is established
 - The narrative structure is settled
@@ -138,7 +144,7 @@ Save a trace for every `spawn_agent`, `send_input`, or `oracle-pro` review call 
 ## Key Rules
 
 Use the current configured reasoning effort unless explicitly overridden; ARIS workload presets do not change model settings. See `../shared-references/reviewer-routing.md`.
-- Send comprehensive context in Round 1 — the external model cannot read your files
+- Give file-capable reviewers primary artifact paths to read directly. For an authorized HTTP reviewer without filesystem access, send the necessary raw source content, not only an executor summary.
 - Be honest about weaknesses — hiding them leads to worse feedback
 - Push back on criticisms you disagree with, but accept valid ones
 - Focus on ACTIONABLE feedback — "what experiment would fix this?"

@@ -1,17 +1,23 @@
 ---
 name: idea-creator
-description: Generate and rank research ideas given a broad direction. Use when user says "找idea", "brainstorm ideas", "generate research ideas", "what can we work on", or wants to explore a research area for publishable directions.
+description: "Generate and rank research ideas from a broad research direction. Use for research brainstorming or candidate selection; compute-backed pilots require execution within an authorized plan and budget."
 argument-hint: "[research-direction]"
 allowed-tools: Bash(*), Read, Write, Grep, Glob, WebSearch, WebFetch, Agent, Skill, mcp__codex__codex, mcp__codex__codex-reply, mcp__manual_review__review, mcp__manual_review__review_reply
 ---
 
 # Research Idea Creator
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 Generate publishable research ideas for: $ARGUMENTS
 
 ## Overview
 
 Given a broad research direction from the user, systematically generate, validate, and rank concrete research ideas. Standalone, Phase 1's landscape survey is **inline** (WebSearch — it does not invoke `/research-lit`); Phases 4-5 invoke `/novelty-check`, `/run-experiment`, and `/monitor-experiment` for validation and pilots. For the full sub-skill pipeline (`/research-lit` → idea generation → `/novelty-check` → `/research-review`), run `/idea-discovery` (Workflow 1), which orchestrates this skill.
+
+## Pilot scope
+
+For brainstorming, complete literature grounding, candidate generation, novelty assessment, and ranking. Design possible pilots, but execute Phase 5 only when pilot execution and the relevant backend/budget are already authorized. Mark unrun pilots as proposed, never pilot-tested. Within an authorized discovery pipeline, keep the caller's tighter limits and do not acquire additional compute automatically.
 
 ## Constants
 
@@ -411,7 +417,7 @@ per-idea novelty search:
 3. **Select for pilots**: take the top 2-3 ideas that survive both the
    cross-model triage and the novelty check forward to Phase 5.
 
-### Phase 5: Parallel Pilot Experiments (for top 2-3 ideas)
+### Phase 5: Parallel Pilot Experiments (when authorized, for top 2-3 ideas)
 
 Before committing to a full research effort, run cheap pilot experiments to get empirical signal. This is the key differentiator from paper-only validation.
 

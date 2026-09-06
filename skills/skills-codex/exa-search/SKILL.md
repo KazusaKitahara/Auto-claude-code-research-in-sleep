@@ -1,11 +1,15 @@
 ---
 name: exa-search
-description: AI-powered web search via Exa with content extraction. Use when user says "exa search", "web search with content", "find similar pages", or needs broad web results beyond academic databases (arXiv, Semantic Scholar).
+description: "Search the web through Exa and extract page content or find similar pages. Use when Exa retrieval or broad web discovery is requested or useful beyond scholarly indexes."
 metadata:
   argument-hint: '[search-query-or-url]'
 ---
 
 # Exa AI-Powered Web Search
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Search query: $ARGUMENTS
 
@@ -85,6 +89,7 @@ fi
 EXA_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/exa_search.py" ] && EXA_FETCHER="$ARIS_REPO/tools/exa_search.py"
 [ -z "$EXA_FETCHER" ] && [ -f tools/exa_search.py ] && EXA_FETCHER="tools/exa_search.py"
+[ -z "$EXA_FETCHER" ] && [ -f "$HOME/.agents/skills/exa-search/exa_search.py" ] && EXA_FETCHER="$HOME/.agents/skills/exa-search/exa_search.py"
 [ -z "$EXA_FETCHER" ] && [ -f ~/.codex/skills/exa-search/exa_search.py ] && EXA_FETCHER="$HOME/.codex/skills/exa-search/exa_search.py"
 [ -z "$EXA_FETCHER" ] && {
   echo "ERROR: exa_search.py not resolved at \$ARIS_REPO/tools/, tools/, or ~/.codex/skills/exa-search/." >&2
@@ -169,6 +174,7 @@ if [ -d research-wiki/ ] and query category was "research paper":
     WIKI_SCRIPT=""
     [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+    [ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
     [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
     for each research-paper hit in results:
         if URL matches arxiv.org/abs/<id>:

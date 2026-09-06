@@ -1,11 +1,13 @@
 ---
 name: proof-checker
-description: Rigorous mathematical proof verification and fixing workflow. Reads a LaTeX proof, identifies gaps via cross-model review (external reviewer backend, ultra reasoning), fixes each gap with full derivations, re-reviews, and generates an audit report. Use when user says "检查证明", "verify proof", "proof check", "审证明", "check this proof", or wants rigorous mathematical verification of a theory paper.
+description: "Verify a mathematical proof against its assumptions with a fresh reviewer and an issue ledger. Use for proof checks or rigorous verification; repair and re-review only when proof fixing is requested."
 argument-hint: "[path-to-tex-file or proof-description] [--deep-fix] [--restatement-check]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, Agent, mcp__codex__codex, mcp__codex__codex-reply, mcp__manual_review__review, mcp__manual_review__review_reply
 ---
 
 # Proof Checker: Rigorous Mathematical Verification & Fixing
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** It is
 > verdict-bearing — it judges proof validity across rounds, threading the
@@ -15,9 +17,15 @@ allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, Agent, mcp__codex__codex,
 > memory. Schedule the *external wait that precedes it*, not the verdict. See
 > [`shared-references/external-cadence.md`](../shared-references/external-cadence.md).
 
-Systematically verify a mathematical proof via cross-model adversarial review, fix identified gaps, re-review until convergence, and generate a detailed audit report with proof-obligation accounting.
+Systematically verify a mathematical proof via cross-model adversarial review, repair identified gaps when requested and re-review within the round limit, and generate a detailed audit report with proof-obligation accounting.
 
 ## Context: $ARGUMENTS
+
+## Verification or repair
+
+Use `MODE=verify` for “check,” “verify,” or review-only requests. Inspect the original proof, run the obligation ledger, first review, counterexample checks, and applicable closure checks, then emit the audit and unresolved findings. Do not edit the proof or enter the repair loop.
+
+Use `MODE=repair` when the user asks to fix/complete the proof, explicitly requests `--deep-fix`, or an authorized caller requests proof repair. Then execute the fix and re-review phases within `MAX_REVIEW_ROUNDS`. Changing a theorem's substantive hypotheses or conclusion must remain within the requested repair scope; otherwise propose the change and preserve the original statement.
 
 ## Constants
 
@@ -385,7 +393,9 @@ Systematically attempt to construct counterexamples using:
 
 Record all attempts (successful or not) in `PROOF_AUDIT.md`.
 
-### Phase 2: Fix Implementation
+### Phase 2: Fix Implementation (repair mode only)
+
+Skip this phase in verification mode; retain each issue as an audit finding.
 
 For each issue, ordered by severity (FATAL → CRITICAL → MAJOR → MINOR):
 
@@ -430,6 +440,8 @@ pdflatex -interaction=nonstopmode <file>.tex 2>&1 | grep -E "Error|Warning|undef
 ```
 
 ### Phase 3: Re-Review (reviewer backend, ultra reasoning)
+
+Repair mode only. Re-review after relevant proof changes; a repeated unchanged finding ends the loop with that issue unresolved.
 
 Continue with the selected backend. For `codex`, use `mcp__codex__codex-reply` with the saved threadId. For `manual`, use `mcp__manual_review__review_reply` with the saved threadId. Include fix summaries. Request the same mandatory checklist.
 
@@ -520,7 +532,9 @@ If `--restatement-check` is set but the cross-location scan cannot complete, emi
 - Ambiguous label resolution (e.g., the same `\label{thm:foo}` appears more than once with no clear canonical pick).
 - **No labeled canonical theorem-like block found** (the algorithm only inspects `\begin{theorem|lemma|proposition|corollary}` blocks with an explicit `\label{...}`; if there is no such block, there is nothing to compare restatements against).
 
-### Phase 3.9: Unrecoverable Proof Protocol
+### Phase 3.9: Unrecoverable Proof Protocol (after attempted repair)
+
+In verification mode, report “not established by the supplied proof” with the precise gaps; do not claim repair was attempted or impossible.
 
 If acceptance gate is not met after MAX_REVIEW_ROUNDS, output a **Proof Unrecoverable Report**:
 1. Minimal set of blocking FATAL/CRITICAL issues that could not be resolved

@@ -1,11 +1,13 @@
 ---
 name: patent-review
-description: Get an external patent examiner review of a patent application. Use when user says "专利审查", "patent review", "审查意见", "examiner review", or wants critical feedback on patent claims and specification.
+description: "Provide examiner-style critical feedback on patent claims and specification using the selected reviewer. Use for patent application review, not an official examination or an automatic rewrite."
 metadata:
   argument-hint: '[patent-directory-or-scope]'
 ---
 
 # Patent Examiner Review via Codex MCP (configured reasoning effort)
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

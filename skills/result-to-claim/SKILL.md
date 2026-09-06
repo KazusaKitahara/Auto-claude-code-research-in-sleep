@@ -1,11 +1,13 @@
 ---
 name: result-to-claim
-description: Use when experiments complete to judge what claims the results support, what they don't, and what evidence is still missing. Codex MCP evaluates results against intended claims and routes to next action (pivot, supplement, or confirm). Use after experiments finish — before writing the paper or running ablations.
+description: "Assess which research claims are supported by existing experiment results and identify missing evidence. Use after experiments or before writing claims; recommend subsequent runs without launching them unless authorized."
 argument-hint: "[experiment-description-or-wandb-run]"
 allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Result-to-Claim Gate
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > 🔒 **Do not wrap this skill in `/loop`, `/schedule`, or `CronCreate`.** It is
 > verdict-bearing — it judges whether results support a claim. Re-running that
@@ -15,7 +17,7 @@ allowed-tools: Bash(*), Read, Grep, Glob, Write, Edit, mcp__codex__codex, mcp__c
 > run this gate **once**. See
 > [`shared-references/external-cadence.md`](../shared-references/external-cadence.md).
 
-Experiments produce numbers; this gate decides what those numbers *mean*. Collect results from available sources, get a Codex judgment, then auto-route based on the verdict.
+Experiments produce numbers; this gate decides what those numbers *mean*. Collect results from available sources, get a Codex judgment, then recommend the next action based on the verdict.
 
 ## Context: $ARGUMENTS
 
@@ -31,7 +33,7 @@ Experiments produce numbers; this gate decides what those numbers *mean*. Collec
 
 Gather experiment data from whatever sources are available in the project:
 
-1. **W&B** (preferred): `wandb.Api().run("<entity>/<project>/<run_id>").history()` — metrics, training curves, comparisons
+1. **W&B** (when configured): inspect run summary/config for final metrics and `scan_history()` for exact required history rows. Sampled `history()` plots alone must not establish a numerical claim.
 2. **EXPERIMENT_LOG.md**: full results table with baselines and verdicts
 3. **EXPERIMENT_TRACKER.md**: check which experiments are DONE vs still running
 4. **Log files**: `ssh server "tail -100 /path/to/training.log"` if no other source
@@ -128,8 +130,11 @@ mcp__codex__codex:
     Experiments run:
     [list experiments with method, dataset, metrics]
 
-    Results:
-    [paste key numbers, comparison deltas, significance]
+    Primary evidence:
+    [absolute raw result/config/log paths; read and verify the numbers directly]
+
+    Results to verify:
+    [key numbers with exact source paths and metric keys]
 
     Evidence pre-check (deterministic, from Step 1.5):
     [per-claim: <id> → verified | value_not_found | path_missing.
@@ -195,7 +200,9 @@ else:
 
 See `shared-references/experiment-integrity.md` for the full integrity protocol.
 
-### Step 4: Route Based on Verdict
+### Step 4: Recommend or Execute the Authorized Next Action
+
+For an assessment-only request, record the verdict and recommendations, then finish. The execution actions below apply only within an already authorized experiment or improvement workflow and share its run and compute limits. Do not recursively launch experiments just because a verdict is `partial`.
 
 #### `no` — Claim not supported
 
@@ -209,14 +216,14 @@ See `shared-references/experiment-integrity.md` for the full integrity protocol.
 
 1. Update the working claim to reflect what IS supported
 2. Record the gap in findings.md
-3. Design and run supplementary experiments to fill evidence gaps
+3. Propose supplementary experiments to fill evidence gaps; run them only when execution is authorized
 4. Re-run result-to-claim after supplementary experiments complete
 5. **Multiple rounds of `partial` on the same claim** → record analysis in findings.md, consider whether to narrow the claim scope or switch ideas
 
 #### `yes` — Claim supported
 
 1. Record confirmed claim in project notes
-2. If ablation studies are incomplete → trigger `/ablation-planner`
+2. If ablation studies are incomplete → recommend `/ablation-planner`, or invoke its planning mode within an authorized workflow
 3. If all evidence is in → ready for paper writing
 
 ### Step 5: Update Research Wiki (if active)
@@ -302,7 +309,7 @@ if research-wiki/ exists:
 - **Codex is the judge, not CC.** CC collects evidence and routes; Codex evaluates. This prevents post-hoc rationalization.
 - Do not inflate claims beyond what the data supports. If Codex says "partial", do not round up to "yes".
 - A single positive result on one dataset does not support a general claim. Be honest about scope.
-- If `confidence` is low, treat the judgment as inconclusive and add experiments rather than committing to a claim.
+- If `confidence` is low, treat the judgment as inconclusive and identify the missing experiments rather than committing to a claim.
 - **Fail closed if the reviewer is unavailable.** If the Codex call fails, first walk the capability fallback chain in `shared-references/reviewer-routing.md` (`gpt-5.6-sol`+`ultra` → `gpt-5.6-sol`+`xhigh` → `gpt-5.5`+`xhigh`, capability errors only). If no allowed pair succeeds: write `CLAIMS_FROM_RESULTS.md` containing ONLY the first line `verdict: REVIEW_UNAVAILABLE` (a machine-checkable gate for pipeline callers), record the same in findings.md, and STOP — CC never substitutes its own claim judgment (a loop can drive, never acquit; `acceptance-gate.md`). Downstream steps (wiki `add_experiment` edges, ablation-planner, paper claims) must not consume a run without a Codex verdict. Exception: the deterministic evidence pre-check (Step 1.5) may still terminally mark a claim `claim_supported: no` for hallucinated evidence — a deterministic rejection needs no reviewer; only SUPPORTIVE or ambiguous outcomes require one.
 - Always record the verdict and reasoning in findings.md, regardless of outcome.
 

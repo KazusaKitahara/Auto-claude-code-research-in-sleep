@@ -1,11 +1,13 @@
 ---
 name: slides-polish
-description: 'Per-page Codex review + targeted python-pptx / Beamer fixes for academic talk slides. Use AFTER /paper-slides (or any externally generated PPTX/Beamer) when the deck looks ''mostly OK'' but the user wants a final pass that aligns visual weight with a reference, bumps PPTX fonts to projector-readable size, kills italic style leaks, fixes text-frame overflow, and catches per-slide layout drift. Trigger phrases: "polish slides", "slides 排版不对", "PPTX 字体太小", "和 Beamer 比一下", "per-page review", "和 codex 一页一页过".'
+description: "Review and fix academic PPTX or Beamer slide layout, typography, overflow, and consistency, optionally using a reference deck. Use for a requested slide-polish pass on an existing presentation."
 metadata:
   argument-hint: '[slides-dir-or-pptx] — reference: <ref-pdf> [— style: generic | why-rf | neurips | icml | iclr | cvpr] [— effort: lite | balanced | max | beast] [— interactive]'
 ---
 
 # Slides Polish: Per-Page Codex Review + Targeted Layout Fixes
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 
@@ -37,12 +39,14 @@ If you do not yet have a deck, run `/paper-slides` first. If you want to
 change content, go back to `/paper-slides` Phases 1-2 (or rewrite the outline
 manually) — do not run `/slides-polish` for that.
 
+Use at most three fix-and-render passes per affected slide unless another limit is requested. Stop when the identified issue is resolved; report an unresolved defect if two passes make no progress. A review-only slide request produces findings without applying fixes.
+
 ## Constants
 
 - **REVIEWER_MODEL** = current agent model and effort unless the user explicitly selects another available reviewer. Use an isolated context and the native host tools.
 - **REVIEWER_REASONING** = inherit the current model configuration unless explicitly overridden.
 - **CONTEXT_POLICY = `fresh`** — Each per-page review uses a **fresh** Codex reviewer call (`spawn_agent`, never `send_input`). See `../shared-references/reviewer-independence.md`. This prevents the reviewer from anchoring on prior fixes.
-- **REFERENCE_VISUAL** — Path to a PDF the user wants the polished deck to **align with** in visual weight (typography proportion, color discipline, callout density). Required input. If polishing PPTX only, the **Beamer compile of the same talk** is the ideal reference. If no reference exists yet, ask the user; do not silently default to "Why-RF" or any preset.
+- **REFERENCE_VISUAL** — Path to a PDF the user wants the polished deck to **align with** in visual weight (typography proportion, color discipline, callout density). Optional unless the task specifically requests matching another deck. If polishing PPTX only, the **Beamer compile of the same talk** is a useful reference. Without one, preserve the input deck’s style and fix observable layout issues; do not impose "Why-RF" or another unrelated preset.
 - **STYLE_PRESET = `generic`** — Default style anchor. Other options: `why-rf` (academic-minimalist, derived from a 2025 academic talk), `neurips`, `icml`, `iclr`, `cvpr`. Presets influence color discipline + element library; the **reference PDF is the visual ground truth**, not the preset.
 - **PPTX_SCALE_HINT = `1.6×`** — Heuristic multiplier from Beamer point sizes to PPTX point sizes for matched visual weight on 13.33"×7.5" PowerPoint at 16:9. Range 1.5-1.8×. The actual scale is **always** validated by visual review, never blindly applied.
 - **INTERACTIVE = false** — When false, applies the recommended fix automatically and continues to the next slide. When true (`— interactive`), pauses for user confirmation before each fix.
@@ -118,7 +122,7 @@ in `.aris/` to keep the deck directory free of polish-specific cruft.
 ### Phase 0: Inventory, Inspect, Triage
 
 1. **Discover inputs**: parse `$ARGUMENTS`; locate slides files; check prerequisites; emit a brief inventory report.
-2. **Confirm reference PDF**: validate the file exists and has the same slide count (or at least ≥ slide count) as the input. If a mismatch, ask user.
+2. **Inspect the reference PDF when supplied**: verify it exists and map relevant slides. Different page counts are acceptable for a style reference. Ask only if a required one-to-one mapping cannot be inferred.
 3. **Inspect shapes**: run the inspector (Phase 0 sub-step below) to produce `INSPECT_<stem>.json` listing every text-frame and shape on every slide with: shape id, type, text content (escaped), font sizes per run, bbox in inches, fill/line color, image dimensions for pictures, presence of speaker notes. This file is the ground truth for "find shape by text" downstream.
 4. **Snapshot original**: `cp <stem>.pptx <stem>_pre_polish.pptx` (and `.tex` if Beamer present). All subsequent edits target `_polished` copy.
 5. **Render PPTX → PDF if needed** (`soffice --headless --convert-to pdf`). If unavailable, prompt user to export.

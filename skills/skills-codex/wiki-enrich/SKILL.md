@@ -1,11 +1,15 @@
 ---
 name: wiki-enrich
-description: Fill evidence-backed per-paper sections in an existing research wiki after literature ingestion. Use for enrich wiki、补全文献笔记、填充摘要与方法; preserve existing notes and mark unavailable full-text evidence.
+description: "Fill evidence-backed paper summaries and methods sections in an existing research wiki after literature ingestion. Use to enrich paper notes while preserving existing content and marking missing evidence."
 metadata:
   argument-hint: '[target: slug|missing|all] [--source alphaxiv|deepxiv|arxiv|auto] [--force] [--max N]'
 ---
 
 # Wiki Enrich: Fill Paper TODO Sections (Karpathy LLM-Wiki)
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Target: **$ARGUMENTS**
 
@@ -59,6 +63,7 @@ ARIS_REPO="${ARIS_REPO:-$(awk -F'\t' '$1=="repo_root"{print $2; exit}' .aris/ins
 WIKI_SCRIPT=""
 [ -n "$ARIS_REPO" ] && [ -f "$ARIS_REPO/tools/research_wiki.py" ] && WIKI_SCRIPT="$ARIS_REPO/tools/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f tools/research_wiki.py ] && WIKI_SCRIPT="tools/research_wiki.py"
+[ -z "$WIKI_SCRIPT" ] && [ -f "$HOME/.agents/skills/research-wiki/research_wiki.py" ] && WIKI_SCRIPT="$HOME/.agents/skills/research-wiki/research_wiki.py"
 [ -z "$WIKI_SCRIPT" ] && [ -f ~/.codex/skills/research-wiki/research_wiki.py ] && WIKI_SCRIPT="$HOME/.codex/skills/research-wiki/research_wiki.py"
 [ -n "$WIKI_SCRIPT" ] || { echo "ERROR: research_wiki.py not found." >&2; exit 1; }
 ```

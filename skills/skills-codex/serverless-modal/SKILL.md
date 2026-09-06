@@ -1,97 +1,56 @@
 ---
 name: serverless-modal
-description: 'Run GPU workloads on Modal — training, fine-tuning, inference, batch processing. Zero-config serverless: no SSH, no Docker, auto scale-to-zero. Use when user says "modal run", "modal training", "modal inference", "deploy to modal", "need a GPU", "run on modal", "serverless GPU", or needs remote GPU compute.'
+description: "Prepare and run GPU workloads on Modal when Modal is the selected compute backend, including training, inference, and batch jobs. Estimate current costs and use the authorized resource budget."
 metadata:
   argument-hint: '[task-description]'
 ---
 
 # Modal Cloud GPU — Training & Inference
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 Task: $ARGUMENTS
 
 ## Overview
 
 **Modal** is a serverless GPU cloud. Key advantages over SSH-based platforms (vast.ai, remote servers):
-- **Zero config**: no SSH, no Docker, no port forwarding. Write Python → `modal run` → done.
-- **Auto scale-to-zero**: billing stops the instant your code finishes. No idle instances.
-- **Local-first**: run `modal run` from your laptop. Code, data, and results stay local; only the GPU function runs remotely.
+- **Python-defined runtime**: declare the container image, resources, and dependencies without managing an SSH server.
+- **Scale-to-zero**: containers can scale down after work ends. Include startup, configured minimum containers, idle/scaledown time, storage, and other billed resources in estimates.
+- **Local authoring, remote execution**: `modal run` packages selected source and inputs for Modal. Results return through function values, logs, or explicit volume downloads; local data does not automatically remain local.
 - **Reproducible environments**: dependencies declared in code via `modal.Image`, not system-level packages.
   Treat the `modal.Image` chain as the RENDERED form of the declarative env spec in
   `../shared-references/compute-env-contract.md` — same spec fields (base, ordered
   pip phases, env vars, smoke probes), same `env:<name>@<specHash>` ledger entry in
   `.aris/compute/modal.md`, same three-tier validation before a long run.
 
-**Best for**: Users without a local GPU who need to debug CUDA code, run small-scale tests, or iterate quickly on experiments. The $5 free tier (no card) is enough for code debugging; $30 (with card) covers most small-scale experiment runs.
+## Setup and current cost estimate
 
-**Trade-off**: Modal costs more per GPU-hour than vast.ai or Lightning for some GPU tiers, but eliminates setup time and idle billing, often making it cheaper for short/medium workloads. For long training runs (>4 hours), consider vast.ai for lower $/hr.
-
-## Authentication
+Use the installed Modal SDK and account when available. If setup is requested, install Modal in the project's environment and run `modal setup` through its supported sign-in flow. A local package check needs no cloud job:
 
 ```bash
-pip install modal
-modal setup          # Opens browser login, writes token to ~/.modal.toml
-# Verify:
-modal run -q 'print("ok")'
+python3 -c 'import modal; print(modal.__version__)'
 ```
 
-- Sign up: https://modal.com (GitHub/Google login)
-- Free (no card): **$5/month** — enough for quick tests
-- Free (with card): **$30/month** — bind a payment method at https://modal.com/settings for the full free tier. Set a **workspace spending limit** to prevent accidental overcharge (Settings → Usage → Spending Limit)
-- Academic: apply for $10k credits | Startups: apply for $25k credits
-- Secrets: `modal secret create huggingface-secret HF_TOKEN=hf_xxxxx`
+Read current [Modal pricing](https://modal.com/pricing) and the account's actual credits/budget before estimating a new workload. Do not assume a particular free-credit amount, GPU price, or speed from this skill. Never add a payment method as an automatic setup step.
 
-> **Recommended setup**: Bind a card to unlock $30/month, then immediately set a spending limit (e.g., $30) so you never exceed the free tier. Modal will pause your workloads when the limit is hit.
->
-> **SECURITY WARNING**: Always bind your card and set spending limits directly on https://modal.com/settings in your browser. NEVER enter payment information, card numbers, or billing details through Codex, Claude Code, or any CLI tool. Only the official Modal website is safe for payment operations.
+Before a new paid run, prepare the launcher and estimate GPU count × runtime × current rate, plus relevant CPU/RAM, storage, transfer, and idle costs. State the runtime and cost limit. Continue within an already authorized budget; request the concrete spending decision only when it is unresolved or the estimate would exceed that budget. “Need a GPU” alone does not select Modal or authorize a rental.
 
-## Pricing (source: modal.com/pricing, per-second billing)
+For memory sizing, estimate weights, activations, optimizer state, KV cache, and batch/sequence dimensions for the actual workload. Benchmark a representative small sample only within the authorized budget; measured throughput is preferable to a static GPU speed table.
 
-| GPU | $/sec | ≈$/hr | VRAM | Bandwidth GB/s | Free budget → hours |
-|---|---|---|---|---|---|
-| T4 | $0.000164 | $0.59 | 16GB | 300 | ~8.5 hr ($5) / 50.8 hr ($30) |
-| L4 | $0.000222 | $0.80 | 24GB | 300 | ~6.3 hr / 37.5 hr |
-| A10 | $0.000306 | $1.10 | 24GB | 600 | ~4.5 hr / 27.3 hr |
-| L40S | $0.000542 | $1.95 | 48GB | 864 | ~2.6 hr / 15.4 hr |
-| A100-40GB | $0.000583 | $2.10 | 40GB | 1555 | ~2.4 hr / 14.3 hr |
-| A100-80GB | $0.000694 | $2.50 | 80GB | 2039 | ~2.0 hr / 12.0 hr |
-| H100 | $0.001097 | $3.95 | 80GB | 3352 | ~1.3 hr / 7.6 hr |
-| H200 | $0.001261 | $4.54 | 141GB | 4800 | ~1.1 hr / 6.6 hr |
-| B200 | $0.001736 | $6.25 | 192GB | 8000 | ~0.8 hr / 4.8 hr |
-
-CPU: $0.047/core/hr | RAM: $0.008/GiB/hr (GPU typically 90%+ of total cost)
-
-## !! Cost Estimation Required !!
-
-Before EVERY run, estimate cost and show to user for confirmation.
-
-Key insights:
-- Inference bottleneck is **memory bandwidth**, not compute → high-bandwidth GPUs are often cheaper overall
-- 7-8B BF16 inference needs **~22GB VRAM** (weights 15G + KV cache 1G + overhead), T4 (16GB) insufficient
-- H100 is often **cheaper than L4** for benchmarks (11x faster but only 5x more expensive)
-
-### Cost Estimation Template (required before every run)
-
-```
+```text
 Cost estimate (Modal):
-  Model: [name] ([params], [precision])
-  VRAM: ~[X]GB (weights + KV cache + overhead)
-  GPU: [type] ([VRAM]GB, $[X]/sec = $[X]/hr, bandwidth [X] GB/s)
-  Estimate: ~[N] min, ~$[X]
+  Workload and model: ...
+  GPU type/count and expected peak VRAM: ...
+  Current resource rate and source date: ...
+  Expected runtime / enforced timeout: ...
+  Estimated total / authorized remaining budget: ...
 ```
-
-### 7-8B BF16 Benchmark Cost Comparison
-
-| GPU | Speed tok/s | $/hr | 1000 samples x 200tok cost | Duration |
-|---|---|---|---|---|
-| **H100** | **224** | $3.95 | **$0.98** | **15 min** |
-| A100-40GB | 104 | $2.10 | $1.12 | 32 min |
-| L4 | 20 | $0.80 | $2.22 | 167 min |
 
 ## Workflow
 
 ### Step 1: Analyze Task → Estimate Cost → Choose GPU
 
-Same analysis as any GPU skill — determine VRAM needs from model size, pick GPU, estimate hours, calculate cost. See pricing table above.
+Determine workload-specific VRAM, choose a suitable available GPU, and calculate the estimate above. Treat the table below as a rough inference-memory starting point; training and long contexts can require substantially more memory.
 
 **VRAM Rules of Thumb:**
 | Model Size | FP16 VRAM | Recommended GPU |
@@ -104,7 +63,7 @@ Same analysis as any GPU skill — determine VRAM needs from model size, pick GP
 
 ### Step 2: Generate Modal Launcher
 
-Based on the task type, generate the appropriate launcher script.
+Choose only the requested pattern. Patterns B and C expose a service and require authorization for that deployment and its access model; a one-shot experiment does not require an endpoint. Include only the reviewed source/data needed for the run. The examples use the current image-based file inclusion API from the [Modal 1.0 migration guide](https://modal.com/docs/guide/modal-1-0-migration). Adjust the `src` directory to the actual project and preserve the project's dependency constraints.
 
 #### Pattern A: One-Shot GPU Function (training, evaluation, benchmark)
 
@@ -121,17 +80,15 @@ image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install("torch")                                        # phase 1: pins
     .pip_install("transformers", "accelerate", "datasets", "wandb")  # phase 2
+    .add_local_dir("src", remote_path="/workspace")  # reviewed project source only
 )
 
-# Mount local project code into the container
-local_code = modal.Mount.from_local_dir(".", remote_path="/workspace")
 # Persistent volume for checkpoints and results
 volume = modal.Volume.from_name("experiment-results", create_if_missing=True)
 
 @app.function(
     image=image,
     gpu="A100-80GB",          # Chosen based on Step 1 analysis
-    mounts=[local_code],
     volumes={"/results": volume},
     timeout=3600 * 6,         # 6 hours max
     secrets=[modal.Secret.from_name("wandb-secret")],  # Optional
@@ -162,7 +119,7 @@ app = modal.App("inference-api")
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install("torch")                          # phase 1: pins
-    .pip_install("transformers", "accelerate")     # phase 2
+    .pip_install("transformers", "accelerate", "fastapi[standard]")  # phase 2
 )
 
 @app.cls(image=image, gpu="L40S")
@@ -260,8 +217,7 @@ Results collection depends on the pattern used:
 **Volume-based** (recommended for training):
 ```python
 # Download results from volume after run completes
-# Option A: In the launcher script, copy results to local mount before exit
-# Option B: Use modal volume commands
+# Download explicit result paths after the run
 modal volume ls experiment-results
 modal volume get experiment-results /run_001/results.json ./results/
 ```
@@ -271,12 +227,7 @@ Results are printed to terminal or returned from the function — already local.
 
 ### Step 6: Cleanup
 
-Modal auto-scales to zero — no manual instance destruction needed. But clean up unused resources:
-
-```bash
-modal app stop <app-name>     # Stop a deployed service
-modal volume rm <volume-name> # Delete a volume when done
-```
+Verify that the launched run/service ended as intended and collect the requested results. Stop a persistent service only when that cleanup is authorized for the identified app. Preserve volumes and checkpoints; deletion is a separate destructive operation and is not implied by a successful run.
 
 ## CLI Reference
 
@@ -298,7 +249,7 @@ modal secret create NAME KEY=VALUE       # Create secret
 - Volume: `modal.Volume.from_name("x", create_if_missing=True)` for persistent storage
 - `@modal.enter()` loads model once per container | `@modal.concurrent()` for concurrent requests
 - Long training: set `timeout=3600 * N` (default is 5 min)
-- Local code: `modal.Mount.from_local_dir(".", remote_path="/workspace")`
+- Local code: `image.add_local_dir("src", remote_path="/workspace")`; inspect included paths before uploading
 - W&B integration: `secrets=[modal.Secret.from_name("wandb-secret")]` + `wandb.init()` in your script
 
 ## Composing with Other Skills
@@ -323,9 +274,8 @@ modal secret create NAME KEY=VALUE       # Create secret
 - modal_volume: my-results   # optional: named volume for results persistence
 ```
 
-No SSH keys, no Docker images, no instance management needed. Just `pip install modal && modal setup`.
+The local Modal SDK and an authenticated account are required. Use the existing account and runtime configuration.
 
-> **Cost protection**: After `modal setup`, go to https://modal.com/settings in your browser (NEVER through CLI) → bind a payment method to unlock $30/month free tier (without card: only $5/month). Then set a **workspace spending limit** equal to your free tier amount — Modal will auto-pause workloads when the limit is reached, preventing any surprise charges.
 
 ## Documentation
 

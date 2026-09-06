@@ -1,11 +1,15 @@
 ---
 name: openalex
-description: Search academic papers via OpenAlex API for open citation data, institutional affiliations, and funding information. Use when user says "openalex search", "search openalex", "open citation graph", or wants comprehensive academic metadata beyond arXiv/Semantic Scholar.
+description: "Search OpenAlex for scholarly works, citation links, affiliations, and funding metadata. Use when OpenAlex or an open academic metadata graph is the appropriate retrieval source."
 metadata:
   argument-hint: '[search-query]'
 ---
 
 # OpenAlex Academic Search
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Search query: $ARGUMENTS
 
@@ -106,6 +110,7 @@ fi
 OPENALEX_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/openalex_fetch.py" ] && OPENALEX_FETCHER="$ARIS_REPO/tools/openalex_fetch.py"
 [ -z "$OPENALEX_FETCHER" ] && [ -f tools/openalex_fetch.py ] && OPENALEX_FETCHER="tools/openalex_fetch.py"
+[ -z "$OPENALEX_FETCHER" ] && [ -f "$HOME/.agents/skills/openalex/openalex_fetch.py" ] && OPENALEX_FETCHER="$HOME/.agents/skills/openalex/openalex_fetch.py"
 [ -z "$OPENALEX_FETCHER" ] && [ -f ~/.codex/skills/openalex/openalex_fetch.py ] && OPENALEX_FETCHER="$HOME/.codex/skills/openalex/openalex_fetch.py"
 [ -f "$OPENALEX_FETCHER" ] || {
   echo "ERROR: openalex_fetch.py not resolved at \$ARIS_REPO/tools/, tools/, or ~/.codex/skills/openalex/." >&2

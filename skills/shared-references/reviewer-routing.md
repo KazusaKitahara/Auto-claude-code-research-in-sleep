@@ -1,5 +1,9 @@
 # Reviewer Routing
 
+## Resolve the user's reviewer choice
+
+Explicit reviewer/backend/model/effort choices take precedence over package defaults and illustrative pinned examples below. Resolve the available model and effort values from the installed host/bridge, then bind calls to those resolved values; preserve the effective review tier unless the user changes it. Do not change the executor model while choosing a reviewer. If the selected route cannot meet a required acceptance condition, report that limit honestly and complete independent authorized preparation; never silently substitute a provider or invent an accepted result.
+
 ## Default Routing
 
 The default reviewer backend depends on the skill AND the execution environment:
@@ -38,7 +42,7 @@ When Codex MCP is the active backend (default for all non-auto-review-loop skill
 
 **Always pin BOTH `model` and `config.model_reasoning_effort` explicitly in the first call of every thread.** Do not rely on the user's `~/.codex/config.toml`: the catalog default effort for gpt-5.6-sol is `low`, far below the review floor.
 
-`ultra` = deepest reasoning + automatic task delegation — right for one-shot verdict-bearing audits, wrong for per-item loops (slower, pricier). Effort enums accepted by codex-cli ≥ 0.144.1: `none / minimal / low / medium / high / xhigh / max / ultra`.
+`ultra` = deepest reasoning + automatic task delegation — right for one-shot verdict-bearing audits, wrong for per-item loops (slower, pricier). The host CLI and model determine accepted effort values. Do not infer support from a union of CLI enums: GPT-6 Astra does not support `none`; inspect current model guidance and the installed tool schema before an explicit model migration.
 
 > **Do not confuse the two "max"es.** ARIS's `— effort: lite|balanced|max|beast` ([effort-contract.md](effort-contract.md)) sets how much WORK the pipeline does; Codex's `model_reasoning_effort: …|max|ultra` sets how hard the REVIEWER thinks. `— effort: max` does NOT imply `model_reasoning_effort: max`.
 

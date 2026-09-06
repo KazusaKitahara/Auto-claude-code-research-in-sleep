@@ -1,9 +1,13 @@
 ---
 name: "arxiv"
-description: "Search, download, and summarize academic papers from arXiv. Use when user says \"search arxiv\", \"download paper\", \"fetch arxiv\", \"arxiv search\", \"get paper pdf\", or wants to find and save papers from arXiv to the local paper library."
+description: "Search arXiv, retrieve paper metadata, and download requested preprints to a local library. Use when arXiv is the requested source or a supplied arXiv paper must be retrieved."
 ---
 
 # arXiv Paper Search & Download
+
+## Runtime resource location
+
+Resolve the loaded `SKILL.md` directory from the host's skill catalog and follow any symlink. Set `ARIS_REPO` to its containing ARIS checkout (the directory with `tools/` and `skills/`) when present; preserve an explicit `ARIS_REPO`. The snippets below then use that checkout. For a copied install without its checkout, resolve bundled helpers relative to the loaded skill directory, or report the missing helper. Project `.agents/skills/` and personal `~/.agents/skills/` are supported; `~/.codex/skills/` checks below are legacy fallbacks, not the primary install location. Do not download a second checkout merely to satisfy a stale path.
 
 Search topic or arXiv paper ID: $ARGUMENTS
 
@@ -48,6 +52,7 @@ fi
 ARXIV_FETCHER=""
 [ -n "${ARIS_REPO:-}" ] && [ -f "$ARIS_REPO/tools/arxiv_fetch.py" ] && ARXIV_FETCHER="$ARIS_REPO/tools/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f tools/arxiv_fetch.py ] && ARXIV_FETCHER="tools/arxiv_fetch.py"
+[ -z "$ARXIV_FETCHER" ] && [ -f "$HOME/.agents/skills/arxiv/arxiv_fetch.py" ] && ARXIV_FETCHER="$HOME/.agents/skills/arxiv/arxiv_fetch.py"
 [ -z "$ARXIV_FETCHER" ] && [ -f ~/.codex/skills/arxiv/arxiv_fetch.py ] && ARXIV_FETCHER="$HOME/.codex/skills/arxiv/arxiv_fetch.py"
 ```
 

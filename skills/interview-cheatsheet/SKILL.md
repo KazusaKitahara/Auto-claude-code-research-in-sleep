@@ -1,13 +1,15 @@
 ---
 name: interview-cheatsheet
-description: "Generate a long-form Chinese interview-prep cheat sheet on a specific ML/LLM topic — formulas with derivations, from-scratch PyTorch code, comparison tables, and 25 高频面试题 (L1 必会 / L2 进阶 / L3 顶级 lab). Use when the user says '写面试 cheat sheet', '写一份 X 教程', '帮我准备 Y 面试题', '出一份 X 速查', or wants a 600-1000 line Chinese tutorial on a specific ML topic."
+description: "Create a Chinese ML/LLM interview-preparation guide with explanations, derivations, runnable code, and practice questions. Use for interview tutorials or cheat sheets; adapt depth and language to the request."
 argument-hint: '<topic> [--effort balanced|max] [--byline "Name (姓名), Affiliation"] [--commit false]'
 allowed-tools: Bash(*), Read, Write, Edit, mcp__codex__codex
 ---
 
 # /interview-cheatsheet — long-form Chinese ML/LLM interview prep
 
-Generate one comprehensive Chinese cheat sheet per invocation: formulas + derivations + from-scratch code + 25 高频题. Output passes cross-model math/code review before rendering. **Detect-only by default: never auto-commits.**
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
+Generate the requested interview-preparation guide. The default comprehensive Chinese format includes formulas, derivations, from-scratch code, and 25 practice questions; adapt language, length, and question count to explicit user preferences. Output passes cross-model math/code review before rendering. **Detect-only by default: never auto-commits.**
 
 ## Inputs
 
@@ -68,11 +70,11 @@ Internally sketch:
 - 25 interview questions sorted by L1 / L2 / L3 difficulty (each with one-line expected answer)
 - Comparison table topics (e.g., "RLHF vs DPO vs IPO vs SimPO")
 
-If the topic is too broad to fit in one cheat sheet, **stop and ask the user to scope** before drafting.
+If the topic is broad, infer a useful interview-level scope from the request and state it briefly. Ask only when the missing focus materially changes the guide; complete independent outline/retrieval work first.
 
 ### Step 2 — Draft MD
 
-Write directly to `docs/tutorials/<slug>_tutorial.md`. Follow the style guide. Length target: 600 lines (balanced) or 1000 lines (max), ±20%.
+Write directly to `docs/tutorials/<slug>_tutorial.md`. Follow the style guide. For an unconstrained comprehensive guide, 600 lines (balanced) or 1000 lines (max) are rough depth examples. Prefer the user’s requested length and complete explanations over line-count padding.
 
 ### Step 3 — Cross-model math/code review (codex gpt-5.6-sol xhigh, FRESH thread)
 
@@ -98,7 +100,7 @@ You are reviewing a long-form Chinese interview-prep tutorial on <TOPIC> for mat
 6. callout_list_collision — Any line matching the pattern `^> (?:💡|⚠️|✅|❌) \*\*[^*]+\*\* — (?:- |\d+\. )`? That swallows the list.
 7. heading_consistency — All `## §N` and `### N.M` follow style guide (space after §N, no glued chars).
 8. section_completeness — Sections §0..§10 (and §A if effort=max) present and non-trivial.
-9. length_target — Within ±20% of target (600 for balanced, 1000 for max).
+9. scope_and_depth — Covers the requested interview topics at the requested depth without padding or unexplained omissions.
 10. personal_info_leak — None of: the owner's institution / lab / center names, degree-program affiliations, private server aliases, job-search or recruitment context, absolute `/Users/...` paths. (Keep the concrete string banlist in local untracked notes — the public SKILL defines only the CATEGORIES; listing the real values here would itself be the leak.)
 
 Return JSON:
@@ -119,7 +121,7 @@ For each FAIL issue, edit the MD. Then re-invoke codex with a **fresh thread** (
 **No hard round cap.** Use these heuristics instead:
 
 - ✅ **Keep going** if each round's FAIL items are *shrinking, concrete, enumerable* (e.g., citation year fixes, off-by-one, single-line code bugs). The reviewer is doing useful work — let it converge.
-- ⛔ **Stop and report** if the same issue keeps coming back (loop detected), or if the FAIL items shift to architectural / scope concerns that need user input, or if the round count exceeds ~6 without convergence.
+- ⛔ **Stop and report** if the same issue keeps coming back (loop detected), or if the FAIL items shift to architectural / scope concerns that need user input, or after at most 6 review/fix rounds without convergence.
 
 Most tutorials converge in 3-5 rounds. Going to 5-6 rounds is fine if substantive bugs are still being caught — the Video Generation tutorial (May 2026) went to 5 rounds and the final 2 rounds caught real citation errors and an over-attribution to Sora's patch size that would have shipped otherwise.
 
@@ -214,7 +216,7 @@ Suggest the row to the user but let them edit it in themselves if they want to c
 | Codex reasoning = xhigh | Hardcoded in Step 3 reviewer config |
 | Personal info redaction | Both math/code reviewer and render reviewer check; banlist in style guide |
 | Lessons-learned encoded | Table-pipe + callout-list collision rules in style guide AND review checks 5+6 |
-| No silent failure | If review FAILs and the FAIL set is no longer shrinking (loop) or hits ~6 rounds without convergence, stop and report — don't push |
+| No silent failure | If review FAILs and the FAIL set is no longer shrinking (loop) or reaches 6 rounds without convergence, stop and report — don't push |
 
 ## When NOT to use
 

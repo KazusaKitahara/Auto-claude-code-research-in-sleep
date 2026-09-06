@@ -1,11 +1,13 @@
 ---
 name: paper-claim-audit
-description: Zero-context verification that every number, comparison, and scope claim in the paper matches raw result files. Uses a fresh Codex reviewer with no prior context; base output is same-family provisional. Use when user says "审查论文数据", "check paper claims", "verify numbers", "论文数字核对", or before submission to ensure paper-to-evidence fidelity.
+description: "Check a manuscript’s numerical, comparison, and scope claims against raw experiment evidence with a fresh reviewer. Use for paper-to-results verification or a required submission evidence audit. Base Codex semantic review is same-family provisional."
 metadata:
   argument-hint: '[paper-directory]'
 ---
 
 # Paper Claim Audit: Zero-Context Evidence Verification
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

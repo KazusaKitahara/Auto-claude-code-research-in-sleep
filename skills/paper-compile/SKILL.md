@@ -1,11 +1,13 @@
 ---
 name: paper-compile
-description: "Compile LaTeX paper to PDF, fix errors, and verify output. Use when user says \"编译论文\", \"compile paper\", \"build PDF\", \"生成PDF\", or wants to compile LaTeX into a submission-ready PDF."
+description: "Compile a LaTeX manuscript to PDF, fix relevant build errors, and inspect the rendered output. Use for paper builds or PDF generation from LaTeX; compilation alone does not establish submission readiness."
 argument-hint: "[paper-directory]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob
 ---
 
 # Paper Compile: LaTeX to Submission-Ready PDF
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Compile the LaTeX paper and fix any issues: **$ARGUMENTS**
 

@@ -1,11 +1,13 @@
 ---
 name: figure-spec
-description: "Generate deterministic publication-quality architecture, workflow, and pipeline diagrams from structured JSON (FigureSpec) into editable SVG. Use when user says \"架构图\", \"workflow 图\", \"pipeline 图\", \"确定性矢量图\", \"figure spec\", \"draw architecture\", or needs precise, editable, publication-ready vector diagrams. Preferred over AI illustration for formal architecture/workflow figures."
+description: "Create precise, editable SVG architecture, workflow, and pipeline diagrams from structured FigureSpec JSON. Use for deterministic vector figures; honor a requested visual medium or existing diagram system."
 argument-hint: "[description-of-diagram]"
 allowed-tools: Bash(*), Read, Write, Edit, mcp__codex__codex
 ---
 
 # FigureSpec: Deterministic JSON → SVG Figure Generation
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Generate publication-quality **architecture diagrams**, **workflow pipelines**, **audit cascades**, and **system topology** figures as editable SVG vector graphics using a deterministic JSON → SVG renderer.
 
@@ -187,7 +189,7 @@ mcp__codex__codex:
     Score each axis 1-10 and list specific issues to fix.
 ```
 
-Iterate until all three axes ≥ 7/10. The ARIS tech report figures went through 5 rounds of this loop to reach C:7/R:7/S:8.
+Use at most three review/revision rounds unless the user supplies another limit. Stop earlier when the requested figure is correct and readable, or when another round would repeat unchanged feedback. Record any unresolved visual defect; numeric scores are advisory.
 
 ## Schema Quick Reference
 

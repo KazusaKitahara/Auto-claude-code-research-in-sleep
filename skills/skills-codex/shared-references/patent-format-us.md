@@ -71,7 +71,7 @@ A USPTO patent application consists of:
 - US allows multiple dependent claims but ONLY in the alternative ("or", not "and")
 - "The method of claim 1 or claim 2, wherein..." -- VALID
 - "The method of claims 1 and 2, wherein..." -- INVALID
-- Each multiple dependent claim counts as one claim for fee purposes
+- For fees, a proper multiple dependent claim counts according to the claims it directly references; claims depending on it inherit that count. See [MPEP 608.01(n)](https://www.uspto.gov/web/offices/pac/mpep/s608.html).
 
 ### 2. Specification
 
@@ -96,7 +96,7 @@ A USPTO patent application consists of:
 - Describe existing approaches and their limitations
 - Do NOT admit prior art as "the best" or "superior"
 - Set up the technical problem the invention solves
-- Do NOT include citations to prior art here (that's for IDS)
+- Describe relevant prior art accurately in the background; the separate IDS duty is not a reason to omit material context or make unsupported statements.
 
 #### Brief Summary of the Invention
 - "In accordance with one or more embodiments..."
@@ -117,7 +117,7 @@ A USPTO patent application consists of:
 - Best mode: must disclose the best way known to the inventor (less enforced post-AIA but still required by statute)
 
 #### Abstract
-- 150 words or 2500 characters maximum (37 CFR 1.72(b))
+- Use a concise abstract, preferably no more than 150 words under 37 CFR 1.72(b); the cited rule does not provide an alternative 2500-character allowance. See [MPEP 608.01(b)](https://www.uspto.gov/web/offices/pac/mpep/s608.html).
 - Purpose: enable efficient prior art searching
 - Include the most important technical features
 - Do NOT include legal phrases or claim references
@@ -135,7 +135,7 @@ A USPTO patent application consists of:
 Under the duty of disclosure (37 CFR 1.56), applicants must cite all known material prior art:
 - List all patents, publications, and other references known to be material
 - Use form PTO/SB/08 for listing references
-- Filed during prosecution, not as part of the initial application
+- An IDS can accompany the initial filing or be filed later subject to the applicable timing, content, statement, and fee requirements. See [MPEP 609](https://www.uspto.gov/web/offices/pac/mpep/s609.html).
 
 ## Means-Plus-Function (35 USC 112(f))
 

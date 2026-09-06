@@ -1,9 +1,6 @@
 ---
 name: paper-poster-html
-description: DEFAULT poster pipeline — build an academic conference poster (ICML/NeurIPS/ICLR/CVPR/...) as a single
-  HTML/CSS file with measurement-driven hard gates, real paper figures, a two-hue design-token system, and print-ready
-  PDF via headless Chromium. Use when the user says "做海报", "poster", "conference poster", "paper poster", or asks
-  to design/redo a research poster.
+description: "Create or revise an academic conference poster in HTML/CSS with real paper figures, layout checks, and print-ready PDF export. Use for research posters when this format fits the request. Uses the configured Gemini review backend."
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, mcp__gemini-review__review, mcp__gemini-review__review_start,
   mcp__gemini-review__review_reply_start, mcp__gemini-review__review_status
 metadata:
@@ -13,6 +10,25 @@ metadata:
 > Override for Codex users who want **Gemini**, not a second Codex/Codex-MCP reviewer, to act as the reviewer. Install this package **after** `skills/skills-codex/*`.
 
 # Paper Poster (HTML): measurement-gated poster generation
+
+## Shared references
+
+In this overlay, `shared-references/<file>` names a resource supplied by the **base Codex package**. Resolve that resource directory once:
+
+1. For a merged/copied installation, use `<catalog-skills-directory>/shared-references/`. Derive the catalog's parent directory **before** following the overlay skill's symlink; do not append `../` to a resolved overlay path.
+2. For direct checkout reading or a catalog that exposes only resolved paths, use `$ARIS_REPO/skills/skills-codex/shared-references/`. Preserve an explicit `ARIS_REPO`; otherwise find the containing checkout from the loaded SKILL.md real path (the ancestor with both `tools/` and `skills/skills-codex/`).
+
+Open the named file there, following any stated section anchor. Read only resources needed for the current phase. If neither location exists, report the missing base support package and leave dependent work pending. This resolution does not change the overlay's reviewer provider.
+
+## Gemini review execution
+
+Use the configured Gemini bridge and preserve explicit model/effort choices supported by that bridge. Record the actual reviewer identity, raw response, job/thread ID, and verdict. `acceptance_status: accepted` describes the assurance class of a completed cross-family review; it never turns a negative verdict into PASS. Missing/unknown identity or failed review is unavailable/error evidence and cannot satisfy the gate.
+
+Persist each job ID immediately. Poll that job with bounded waits until its terminal result or the configured review deadline; if no deadline is available, use a 15-minute monitoring cap. At the cap, report the pending job and resume its status later instead of starting a duplicate review. A timeout, authentication failure, or unavailable bridge does not authorize a provider switch. Continue independent preparation while leaving the required review pending.
+
+For installation resources, follow the loaded SKILL.md real path to its ARIS checkout and resolve `ARIS_REPO` there, preserving an explicit setting. Project/personal skill directories may be symlinks; copied overlays still need the base package's resources. Use `$ARIS_REPO/mcp-servers/gemini-review/server.py` for the matching local bridge, not an assumed file under `~/.codex`.
+
+Apply [ARIS task scope and run limits](#shared-references) (`shared-references/effort-contract.md#task-scope-and-run-limits`) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Gemini overlay assurance:** `review_independence: cross-family` and `acceptance_status: accepted`.
 
@@ -27,7 +43,7 @@ cross-model review loop, and the anti-patch-loop fix vocabulary.
 This overlay is identical to `skills/skills-codex/paper-poster-html/` except that the
 two cross-model review calls go to **Gemini** through the local `gemini-review` MCP
 bridge instead of a spawned GPT reviewer agent. Follow the base mirror for everything
-not restated here (phases, gates, fix vocabulary, figure provenance, output contract).
+not restated here (phases, gates, fix vocabulary, figure provenance, output contract). Resolve that base SKILL.md at `$ARIS_REPO/skills/skills-codex/paper-poster-html/SKILL.md`; the installed overlay path may have replaced it, so do not recursively reload the overlay as its own base.
 
 ## Reviewer constants (overlay)
 
@@ -103,5 +119,5 @@ never straight to re-review.
 
 ## Review tracing
 
-Save both review jobs' raw responses per `../../shared-references/review-tracing.md` to
+Save both review jobs' raw responses per `shared-references/review-tracing.md` to
 `.aris/traces/paper-poster-html/<date>_run<NN>/`.

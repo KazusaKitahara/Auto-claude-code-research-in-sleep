@@ -1,6 +1,6 @@
 ---
 name: openalex
-description: Search academic papers via OpenAlex API for open citation data, institutional affiliations, and funding information. Use when user says "openalex search", "search openalex", "open citation graph", or wants comprehensive academic metadata beyond arXiv/Semantic Scholar.
+description: "Search OpenAlex for scholarly works, citation links, affiliations, and funding metadata. Use when OpenAlex or an open academic metadata graph is the appropriate retrieval source."
 argument-hint: "[search-query]"
 allowed-tools: Bash(*), Read, Write
 ---

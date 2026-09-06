@@ -1,11 +1,13 @@
 ---
 name: paper-writing
-description: 'Workflow 3: Full paper writing pipeline that goes from a narrative report to a polished, submission-ready PDF. Use when user says "写论文全流程", "write paper pipeline", "从报告到PDF", "paper writing", or wants the complete paper generation workflow.'
+description: "Run the complete manuscript pipeline from research report through outline, figures, LaTeX drafting, review, and final PDF checks. Use when the user requests the full paper-writing workflow."
 metadata:
   argument-hint: '[narrative-report-path-or-topic]'
 ---
 
 # Workflow 3: Paper Writing Pipeline
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 > **Codex assurance:** every base semantic audit is same-family provisional.
 > The pipeline still completes when all mandatory audits are green, but the
@@ -447,9 +449,9 @@ if paper/references.bib (or paper.bib) exists and contains entries cited from se
       - Per-entry verdicts: KEEP / FIX / REPLACE / REMOVE
 
     If any REPLACE or REMOVE verdicts:
-        Surface to user for human approval — never auto-modify content claims
+        Use existing authorization for the proposed correction; surface any new substantive claim decision to the user
     If only FIX verdicts (metadata corrections):
-        Apply with user confirmation, then recompile
+        Apply when the concrete correction is authorized, then recompile
     If all KEEP:
         Pass — bibliography clean for submission
 else:

@@ -1,11 +1,13 @@
 ---
 name: system-profile
-description: Profile a target (script, process, GPU, memory, interconnect) for performance analysis. Use when user says "profile", "benchmark", "bottleneck", or wants performance analysis.
+description: "Profile a specified script, process, or compute resource to identify CPU, GPU, memory, or interconnect bottlenecks. Use for concrete runtime performance analysis."
 metadata:
   argument-hint: <target, e.g. "train.py", "gpu", "pid 1234", "vllm serving">
 ---
 
 # System Profile
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Profile the specified target and summarize the results. Target: $ARGUMENTS
 
@@ -22,7 +24,7 @@ Parse `$ARGUMENTS` to understand what to profile. Examples:
 - An entire framework or system (e.g., "autogen", "vllm serving") — profile its end-to-end execution, identify bottlenecks across components
 - "gpu" / "interconnect" / "memory" for focused profiling
 
-If `$ARGUMENTS` is empty or unclear, ask the user.
+Infer the target from the current task and project when possible. Ask only if there is no identifiable script, process, or resource to profile.
 
 ### Step 2: Choose profiling methods
 
@@ -101,4 +103,4 @@ List every file that was modified or created for profiling purposes:
 | ... | created | ... | — |
 
 This allows the user to review and revert all instrumentation changes.
-Offer to clean up (remove all instrumentation) when the user is done.
+Remove temporary instrumentation introduced only for this profiling task after collecting the report, unless the user wants to keep it. Preserve unrelated changes and durable profiling artifacts requested by the user.

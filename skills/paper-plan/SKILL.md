@@ -1,11 +1,13 @@
 ---
 name: paper-plan
-description: "Generate a structured paper outline from review conclusions and experiment results. Use when user says \"写大纲\", \"paper outline\", \"plan the paper\", \"论文规划\", or wants to create a paper plan before writing."
+description: "Create a structured manuscript outline from research claims, evidence, and review conclusions. Use for a paper plan or outline before drafting sections."
 argument-hint: "[topic-or-narrative-doc] [— style-ref: <source>]"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__codex__codex, mcp__codex__codex-reply
 ---
 
 # Paper Plan: From Review Conclusions to Paper Outline
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Generate a structured, section-by-section paper outline from: **$ARGUMENTS**
 

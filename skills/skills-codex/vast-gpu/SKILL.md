@@ -1,11 +1,13 @@
 ---
 name: vast-gpu
-description: Rent, manage, and destroy GPU instances on vast.ai. Use when user says "rent gpu", "vast.ai", "rent a server", "cloud gpu", or needs on-demand GPU without owning hardware.
+description: "Find and manage Vast.ai GPU instances, including an authorized rental, status inspection, and requested cleanup. Use when Vast.ai is the selected on-demand compute provider."
 metadata:
   argument-hint: '[task-description or action]'
 ---
 
 # Vast.ai GPU Management
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Manage vast.ai GPU instance: $ARGUMENTS
 
@@ -23,7 +25,7 @@ vastai set api-key YOUR_API_KEY
 
 > If your system Python is < 3.10, create a virtual environment with Python ≥ 3.10 (e.g., `conda create`, `pyenv`, `uv venv`, etc.) and install `vastai` there.
 
-SSH public key **must be uploaded at https://cloud.vast.ai/manage-keys/ BEFORE creating any instance**. Keys are baked into instances at creation time — if you add a key after renting, you must destroy and re-create the instance.
+Associate the user’s public SSH key with the account/instance before connecting. For an existing instance missing the key, Vast supports [attaching an SSH key](https://docs.vast.ai/cli/reference/attach-ssh): `vastai attach ssh <instance_id> <public_key_path>`. An authentication problem is not a reason to destroy and recreate an instance.
 
 ## State File
 
@@ -52,7 +54,7 @@ This file is the source of truth for `/run-experiment` and `/monitor-experiment`
 
 ## Workflow
 
-### Action: Provision (default)
+### Action: Provision (when rental is requested)
 
 Analyze the task, find the best GPU, and present cost-optimized options. This is the main entry point — called directly or automatically by `/run-experiment` when `gpu: vast` is set.
 
@@ -87,11 +89,11 @@ Based on the task analysis, determine:
 | **Num GPUs** | 1 unless: model doesn't fit in single GPU VRAM, or scripts use DDP/FSDP/DeepSpeed, or plan specifies multi-GPU |
 | **Est. hours** | From experiment plan's cost column, or: (dataset_size × epochs) / (throughput × batch_size). Default to user estimate if available. Add 30% buffer for setup + unexpected slowdowns |
 | **Min disk** | 20 GB base + model checkpoint size + dataset size. Default: 50 GB |
-| **CUDA version** | Match PyTorch version. PyTorch 2.x needs CUDA ≥ 11.8. Default: 12.1 |
+| **CUDA version** | Match PyTorch version. Verify the selected PyTorch build’s CUDA/runtime requirements; do not infer one minimum from the major version |
 
 **Step 3: Search Offers**
 
-Search across multiple GPU tiers to find the best value. Always search broadly — do NOT limit to one GPU model:
+Search across multiple GPU tiers to find the best value. Compare suitable options unless the user already selected a GPU model or imposed a narrower constraint:
 
 ```bash
 # Tier 1: Budget GPUs (good for small models, fine-tuning, ablations)
@@ -164,7 +166,7 @@ vastai create instance <OFFER_ID> \
   --onstart-cmd "apt-get update && apt-get install -y git screen rsync"
 ```
 
-Default Docker image: `pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel` (override via `AGENTS.md` `image:` field if set).
+Use the project’s declared container image and verify its current availability and driver/runtime compatibility. Resolve it as `VAST_IMAGE`; do not silently replace the project stack with an old tutorial image.
 
 The output looks like:
 ```
@@ -350,15 +352,15 @@ Tear down all active instances (use after all experiments complete):
 
 ## Key Rules
 
-- **Task-driven selection** — NEVER ask users to pick GPU models. Analyze the task, estimate requirements, present cost-optimized options with total price
-- **ALWAYS destroy instances when experiments are done** — vast.ai bills per second, leaving instances running wastes money
+- **Task-driven selection** — Use a stated GPU choice; otherwise infer suitable options from the workload. Analyze the task, estimate requirements, present cost-optimized options with total price
+- **Cleanup follows the authorized lifecycle** — destroy only the identified instance when the user requested destruction or preauthorized `auto_destroy` for that task, after collecting required results. Otherwise report its state and ongoing costs. [Stopping preserves data but retains storage charges; destroying deletes instance data](https://docs.vast.ai/guides/instances/manage-instances).
 - **Download results before destroying** — data is lost permanently on destroy
 - **Prefer on-demand pricing** for short experiments (<2 hours). Suggest interruptible/bid pricing for long runs (>4 hours) with checkpointing
 - **Check reliability > 0.95** — unreliable hosts may crash mid-training
 - **Use `--direct` SSH** when creating instances — faster than proxy SSH
 - **Always use `vastai ssh-url <ID>`** to get connection details — the host/port from `show instances` may differ
-- **SSH keys must be uploaded BEFORE creating instances** — keys are baked in at creation time. If SSH fails with "Permission denied", destroy and recreate after adding the key
-- **Default Docker image**: `pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel` unless user specifies otherwise
+- **Check SSH key association on authentication failure** — attach the authorized public key to the existing instance when needed; preserve the instance and its data.
+- **Container image**: preserve the user/project-selected stack and validate it against the instance driver before a long run.
 - **Working directory on instance**: `/workspace/` (Docker default). Code syncs to `/workspace/project/`
 - **State file `vast-instances.json` must stay up to date** — other skills depend on it
 - **Show estimated total cost, not just $/hr** — a $0.90/hr GPU that finishes in 2h ($1.80) beats a $0.30/hr GPU that takes 8h ($2.40)
@@ -371,7 +373,7 @@ Users only need to set `gpu: vast` — no hardware preferences required:
 ```markdown
 ## Vast.ai
 - gpu: vast                  # tells run-experiment to use vast.ai
-- auto_destroy: true         # auto-destroy after experiment completes (default: true)
+- auto_destroy: true         # explicit lifecycle authorization for this task; otherwise false
 - max_budget: 5.00           # optional: max total $ to spend (skill warns if estimate exceeds this)
 - image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel  # optional: override Docker image
 ```

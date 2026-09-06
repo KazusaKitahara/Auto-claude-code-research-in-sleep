@@ -1,11 +1,13 @@
 ---
 name: meta-optimize
-description: Analyze ARIS usage logs and propose optimizations to SKILL.md files, reviewer prompts, and workflow defaults. Outer-loop harness optimization inspired by Meta-Harness (Lee et al., 2026). Use when user says "优化技能", "meta optimize", "improve skills", "分析使用记录", or wants to optimize ARIS's own harness components based on accumulated experience.
+description: "Analyze recorded ARIS workflow usage and stage evidence-backed skill or harness improvement proposals. Use for optimization from usage logs; this proposal workflow does not land its own patches."
 metadata:
   argument-hint: '[target-skill-or-all]'
 ---
 
 # Meta-Optimize: Outer-Loop Harness Optimization for ARIS
+
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
 
 Reviewer calls follow [the current routing contract](../shared-references/reviewer-routing.md). Tool examples use the host’s available native spawn/follow-up schema; omit model/effort unless explicitly selected, and isolate independent reviews from inherited conversation.
 

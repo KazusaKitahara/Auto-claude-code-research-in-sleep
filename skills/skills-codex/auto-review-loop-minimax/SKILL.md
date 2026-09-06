@@ -1,13 +1,19 @@
 ---
 name: "auto-review-loop-minimax"
-description: "Autonomous multi-round research review loop using MiniMax API. Use when you want to use MiniMax instead of Codex MCP for external review. Trigger with \"auto review loop minimax\" or \"minimax review\"."
+description: "Run a bounded research review and revision loop with MiniMax as the reviewer. Use when the user requests a MiniMax improvement loop; a single MiniMax review does not imply implementation."
 ---
 
 # Auto Review Loop (MiniMax Version): Autonomous Research Improvement
 
+Apply [ARIS task scope and run limits](../shared-references/effort-contract.md#task-scope-and-run-limits) when interpreting defaults, checkpoints, and downstream calls.
+
 Autonomously iterate: review → implement fixes → re-review, until the external reviewer gives a positive assessment or MAX_ROUNDS is reached.
 
 ## Context: $ARGUMENTS
+
+## Loop boundaries
+
+Resolve the requested target, permitted edits, and concrete round/time/compute limits before starting. Reuse prior authorization for in-scope fixes. A review-only request ends with findings; an iterative repair request runs the loop. Stop on completion, cancellation, the first limit, or no material progress in two successive rounds, and report remaining issues. A reviewer error is not permission to switch providers, rerun a possibly dispatched paid call, or count a missing review as a pass.
 
 ## Constants
 
@@ -32,27 +38,45 @@ mcp__minimax-chat__minimax_chat:
   system: "You are a senior machine learning researcher..."
 ```
 
-### Method 2: curl (Fallback)
+### Method 2: Direct HTTP (Fallback)
 
-If MCP is not available, use curl directly:
+If MCP is unavailable before dispatch and direct HTTP is authorized, use this request pattern:
 
 ```bash
-curl -s "https://api.minimax.io/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $MINIMAX_API_KEY" \
-  -d '{
-    "model": "MiniMax-M3",
-    "messages": [
-      {"role": "system", "content": "You are a senior ML researcher..."},
-      {"role": "user", "content": "[Review prompt]"}
-    ],
-    "max_tokens": 4096
-  }'
+# Write a JSON object with a messages array to .aris/review-request.json using a file-writing tool.
+# These JSON files are local evidence artifacts, not shell templates.
+python3 - <<'PY_REVIEW'
+import json
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+payload = json.loads(Path(".aris/review-request.json").read_text())
+payload["model"] = os.environ.get("MINIMAX_MODEL", "MiniMax-M3")
+url = "https://api.minimax.io/v1/chat/completions"
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json",
+                           "Authorization": "Bearer " + os.environ["MINIMAX_API_KEY"]},
+                  method="POST")
+try:
+    with urlopen(request, timeout=120) as response:
+        raw = response.read()
+except Exception:
+    raise SystemExit("Review delivery unconfirmed; inspect state before retrying")
+Path(".aris/review-response.json").write_bytes(raw)
+print("Raw review saved to .aris/review-response.json")
+PY_REVIEW
 ```
 
-**API Key**: Read from `~/.codex/settings.json` under `env.MINIMAX_API_KEY`, or from environment variable.
+**API Key**: Use `MINIMAX_API_KEY` from the process environment or the installed MCP server’s secret configuration. Do not read or print the entire host settings file.
 
-**Why MiniMax instead of a secondary Codex agent?** Codex CLI uses OpenAI's Responses API (`/v1/responses`) which is not supported by third-party providers. See: https://github.com/openai/codex/discussions/7782
+**Transport**: This skill uses the configured MiniMax Chat Completions route. Check the installed server and provider API rather than inferring support from a Codex endpoint.
+
+## Transport and evidence limits
+
+A remote chat API cannot read local paths. Send the necessary primary artifact contents through the authorized route, with source names, alongside the task; do not substitute only executor-written summaries. Preserve the raw response and actual provider-reported model, and identify the executor/reviewer families. Unknown or same-family semantic review remains provisional and cannot satisfy a required cross-family acceptance gate. Use the relevant acceptance and reviewer-independence contracts.
+
+Use the selected model and only parameters supported by its endpoint. Retry only an explicitly rejected pre-dispatch capability request; do not switch providers or resend after an ambiguous timeout. For a possibly dispatched call, report review unavailable and preserve its state. A missing provider blocks that review, while independent local preparation can continue.
 
 ## State Persistence (Compact Recovery)
 
@@ -80,7 +104,7 @@ Long-running loops may hit the context window limit, triggering automatic compac
 1. **Check for `review-stage/REVIEW_STATE.json`** *(fall back to `./REVIEW_STATE.json` if not found — legacy path)*:
    - If neither path exists: **fresh start** (normal case)
    - If it exists AND `status` is `"completed"`: **fresh start** (previous loop finished normally)
-   - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **fresh start** (stale state from a killed/abandoned run — delete the file and start over)
+   - If it exists AND `status` is `"in_progress"` AND `timestamp` is older than 24 hours: **inspect before resuming** (stale state may still refer to live jobs; preserve it, check the target and pending jobs, and resume only if this invocation requests that work)
    - If it exists AND `status` is `"in_progress"` AND `timestamp` is within 24 hours: **resume**
      - Read the state file to recover `round`, `last_score`, `pending_experiments`
      - Read `review-stage/AUTO_REVIEW.md` to restore full context of prior rounds *(fall back to `./AUTO_REVIEW.md`)*
@@ -111,23 +135,29 @@ Use mcp__minimax-chat__minimax_chat tool with:
 
 **If MCP NOT available (Fallback):**
 ```bash
-curl -s "https://api.minimax.io/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $MINIMAX_API_KEY" \
-  -d '{
-    "model": "MiniMax-M3",
-    "messages": [
-      {
-        "role": "system",
-        "content": "You are a senior machine learning researcher serving as a reviewer for top-tier conferences like NeurIPS, ICML, and ICLR. Provide rigorous, constructive feedback."
-      },
-      {
-        "role": "user",
-        "content": "[Round N/MAX_ROUNDS of autonomous review loop]\n\n[Full research context: claims, methods, results, known weaknesses]\n[Changes since last round, if any]\n[For round 2+: Summary of previous review feedback and what was addressed]\n\nPlease act as a senior ML reviewer (NeurIPS/ICML level).\n\n1. Score this work 1-10 for a top venue\n2. List remaining critical weaknesses (ranked by severity)\n3. For each weakness, specify the MINIMUM fix (experiment, analysis, or reframing)\n4. State clearly: is this READY for submission? Yes/No/Almost\n\nBe brutally honest. If the work is ready, say so clearly."
-      }
-    ],
-    "max_tokens": 4096
-  }'
+# Write a JSON object with a messages array to .aris/review-request.json using a file-writing tool.
+# These JSON files are local evidence artifacts, not shell templates.
+python3 - <<'PY_REVIEW'
+import json
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+payload = json.loads(Path(".aris/review-request.json").read_text())
+payload["model"] = os.environ.get("MINIMAX_MODEL", "MiniMax-M3")
+url = "https://api.minimax.io/v1/chat/completions"
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json",
+                           "Authorization": "Bearer " + os.environ["MINIMAX_API_KEY"]},
+                  method="POST")
+try:
+    with urlopen(request, timeout=120) as response:
+        raw = response.read()
+except Exception:
+    raise SystemExit("Review delivery unconfirmed; inspect state before retrying")
+Path(".aris/review-response.json").write_bytes(raw)
+print("Raw review saved to .aris/review-response.json")
+PY_REVIEW
 ```
 
 **Note**: Each round is a standalone API call. For round 2+, include the summary of previous reviews and changes in the prompt itself.
@@ -262,23 +292,29 @@ mcp__minimax-chat__minimax_chat:
 
 **curl Fallback:**
 ```bash
-curl -s "https://api.minimax.io/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $MINIMAX_API_KEY" \
-  -d '{
-    "model": "MiniMax-M3",
-    "messages": [
-      {
-        "role": "system",
-        "content": "You are a senior machine learning researcher serving as a reviewer for top-tier conferences like NeurIPS, ICML, and ICLR. Provide rigorous, constructive feedback."
-      },
-      {
-        "role": "user",
-        "content": "[Round N/MAX_ROUNDS of autonomous review loop]\n\n## Previous Review Summary (Round N-1)\n- Previous Score: X/10\n- Previous Verdict: [ready/almost/not ready]\n- Previous Key Weaknesses: [list]\n\n## Changes Since Last Review\n1. [Action 1]: [result]\n2. [Action 2]: [result]\n3. [Action 3]: [result]\n\n## Updated Results\n[paste updated metrics/tables]\n\n## Current Research Context\n[brief summary of claims, methods, current state]\n\nPlease re-score and re-assess:\n1. Score this work 1-10 for a top venue\n2. List remaining critical weaknesses (ranked by severity)\n3. For each weakness, specify the MINIMUM fix\n4. State clearly: is this READY for submission? Yes/No/Almost\n\nBe brutally honest. If the work is ready, say so clearly."
-      }
-    ],
-    "max_tokens": 4096
-  }'
+# Write a JSON object with a messages array to .aris/review-request.json using a file-writing tool.
+# These JSON files are local evidence artifacts, not shell templates.
+python3 - <<'PY_REVIEW'
+import json
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+payload = json.loads(Path(".aris/review-request.json").read_text())
+payload["model"] = os.environ.get("MINIMAX_MODEL", "MiniMax-M3")
+url = "https://api.minimax.io/v1/chat/completions"
+request = Request(url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json",
+                           "Authorization": "Bearer " + os.environ["MINIMAX_API_KEY"]},
+                  method="POST")
+try:
+    with urlopen(request, timeout=120) as response:
+        raw = response.read()
+except Exception:
+    raise SystemExit("Review delivery unconfirmed; inspect state before retrying")
+Path(".aris/review-response.json").write_bytes(raw)
+print("Raw review saved to .aris/review-response.json")
+PY_REVIEW
 ```
 
 

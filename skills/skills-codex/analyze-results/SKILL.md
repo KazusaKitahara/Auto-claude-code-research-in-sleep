@@ -1,6 +1,6 @@
 ---
 name: "analyze-results"
-description: "Analyze ML experiment results, compute statistics, generate comparison tables and insights. Use when user says \"analyze results\", \"compare\", or needs to interpret experimental data."
+description: "Analyze ML experiment result files, compare methods and seeds, and report statistics and evidence-backed findings. Use for experiment-data analysis or result interpretation."
 ---
 
 # Analyze Experiment Results
