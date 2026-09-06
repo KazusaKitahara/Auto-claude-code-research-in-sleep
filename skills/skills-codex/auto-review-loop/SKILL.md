@@ -367,7 +367,7 @@ This is the authoritative record. Do NOT truncate or paraphrase.]
 
 **If score >= 6 AND verdict ∈ {"ready", "almost"}:** append an acquittal line to `review-stage/ACQUITTAL_LOG.jsonl`:
 ```
-{"run_id":"<current-run_id>","round":<N>,"backend":"codex","effort":"xhigh","verdict":"<ready|almost>","score":<score>,"trace_id":"<skill>/<YYYY-MM-DD>_run<NN>","timestamp":"<ISO8601>"}
+{"run_id":"<current-run_id>","round":<N>,"backend":"codex","effort":"<actual-reviewer-effort>","verdict":"<ready|almost>","score":<score>,"trace_id":"<skill>/<YYYY-MM-DD>_run<NN>","timestamp":"<ISO8601>"}
 ```
 Use `>>` (append), never `>`. The `trace_id` must be the actual trace directory relative to `.aris/traces/` (for example `auto-review-loop/2026-07-13_run01`), not a fabricated `trace_...` identifier.
 
